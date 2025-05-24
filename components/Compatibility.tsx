@@ -27,7 +27,7 @@ const Personalization = () => {
   return (
     <div className="flex flex-col lg:grid grid-cols-2 gap-12">
       <div className="flex flex-col gap-8 justify-center">
-        <h1 className="text-5xl xl:text-6xl font-semibold flex flex-col 2xl:flex-row gap-4 xl:gap-8">
+        <h1 className="text-3xl lg:text-4xl xl:text-5xl font-semibold flex flex-col 2xl:flex-row gap-4 xl:gap-8">
           <span>
             <span className="bg-gradient-to-r from-[#ffc182] to-[#5d64e4] bg-clip-text text-transparent">
               近乎完美
@@ -36,7 +36,7 @@ const Personalization = () => {
           </span>
           <span>兼容性</span>
         </h1>
-        <p className="text-2xl xl:text-3xl leading-tight">
+        <p className="text-xl xl:text-2xl leading-tight">
           Class Widgets 由 PyQt 构建，得以兼容 Windows、Linux、macOS
           三大主流操作系统
         </p>

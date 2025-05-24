@@ -13,10 +13,10 @@ const Test = () => {
           <img
             src={Logo.src}
             alt="logo"
-            className="size-36 lg:size-64 2xl:size-96"
+            className="size-24 lg:size-32 xl:size-48"
           />
           <div className="flex flex-col gap-12">
-            <div className="flex text-4xl md:text-5xl lg:text-6xl 2xl:text-8xl transition-all duration-500 ease-mobai-bounce flex-col gap-8 font-semibold">
+            <div className="flex text-3xl lg:text-4xl xl:text-5xl transition-all duration-500 ease-mobai-bounce flex-col gap-4 lg:gap-8 font-semibold">
               <h1>多样的桌面课表</h1>
               <h1>由我们定义的全新桌面形态</h1>
             </div>
