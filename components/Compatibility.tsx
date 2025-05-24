@@ -17,7 +17,7 @@ const Personalization = () => {
 
       setTimeout(() => {
         setCurrentImageIndex(
-          (prevIndex) => (prevIndex + 1) % screenshots.length
+          (prevIndex) => (prevIndex + 1) % screenshots.length,
         );
         setIsTransitioning(false);
       }, 250);
