@@ -3,6 +3,7 @@ import Win from "@/assets/screenshots/win.png";
 import Linux from "@/assets/screenshots/linux.png";
 import Win7 from "@/assets/screenshots/win7.png";
 import Macos from "@/assets/screenshots/macos.png";
+
 const Personalization = () => {
   const screenshots = [Win, Linux, Win7, Macos].map((it) => it.src);
 
@@ -47,6 +48,14 @@ const Personalization = () => {
         <p className="text-lg leading-tight whitespace-pre-line lg:text-right xl:text-xl">
           {`Class Widgets 由 PyQt 构建\n得以兼容 Windows、Linux、MacOS 三大主流操作系统`}
         </p>
+      </div>
+      <div className="aspect-video overflow-hidden rounded-lg bg-[#E8E7F2]">
+        <img
+          src={screenshots[currentImageIndex]}
+          className={`ease-mobai-standard h-full w-full object-contain transition-opacity duration-500 ${
+            isTransitioning ? "opacity-0" : "opacity-100"
+          }`}
+        />
       </div>
     </div>
   );
