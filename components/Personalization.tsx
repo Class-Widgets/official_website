@@ -10,7 +10,7 @@ const Personalization = () => {
           </span>
           <span>极致自定义</span>
         </h1>
-        <p className="text-xl xl:text-2xl leading-tight">
+        <p className="text-xl leading-tight xl:text-2xl">
           在 Class Widgets 中，提供了基于 Python
           的插件系统和插件广场；你可以在插件广场中安装您需要的插件。以及彰显个性的主题系统，让你搭建出独一无二的
           Class Widgets。
