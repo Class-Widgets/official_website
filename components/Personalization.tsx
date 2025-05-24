@@ -1,6 +1,8 @@
+import ThemePlugin from "@/assets/theme&plugin_1.png";
+
 const Personalization = () => {
   return (
-    <div className="grid grid-cols-2 gap-12">
+    <div className="flex flex-col lg:grid grid-cols-2 gap-12">
       <div className="flex flex-col gap-8 justify-center">
         <h1 className="text-5xl xl:text-6xl font-semibold flex flex-col 2xl:flex-row gap-4 xl:gap-8">
           <span className="bg-gradient-to-r from-[#8e82ff] to-[#16e647] bg-clip-text text-transparent">
@@ -14,11 +16,7 @@ const Personalization = () => {
           Class Widgets。
         </p>
       </div>
-      <img
-        src="/assets/theme&plugin_1.png"
-        alt="theme&plugin"
-        className="w-full h-fit"
-      />
+      <img src={ThemePlugin.src} alt="theme&plugin" className="w-full h-fit" />
     </div>
   );
 };

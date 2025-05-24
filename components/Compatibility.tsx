@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
-
+import Win from "@/assets/screenshots/win.png";
+import Linux from "@/assets/screenshots/linux.png";
+import Win7 from "@/assets/screenshots/win7.png";
+import Macos from "@/assets/screenshots/macos.png";
 const Personalization = () => {
-  const screenshots = [
-    "/assets/screenshots/win.png",
-    "/assets/screenshots/linux.png",
-    "/assets/screenshots/win7.png",
-    "/assets/screenshots/macos.png",
-  ];
+  const screenshots = [Win, Linux, Win7, Macos].map((it) => it.src);
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -27,7 +25,7 @@ const Personalization = () => {
   }, [screenshots.length]);
 
   return (
-    <div className="grid grid-cols-2 gap-12">
+    <div className="flex flex-col lg:grid grid-cols-2 gap-12">
       <div className="flex flex-col gap-8 justify-center">
         <h1 className="text-5xl xl:text-6xl font-semibold flex flex-col 2xl:flex-row gap-4 xl:gap-8">
           <span>
