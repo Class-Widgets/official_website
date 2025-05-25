@@ -49,14 +49,6 @@ const Personalization = () => {
           {`Class Widgets 由 PyQt 构建\n得以兼容 Windows、Linux、MacOS 三大主流操作系统`}
         </p>
       </div>
-      <div className="aspect-video overflow-hidden rounded-lg bg-[#E8E7F2]">
-        <img
-          src={screenshots[currentImageIndex]}
-          className={`ease-mobai-standard h-full w-full object-contain transition-opacity duration-500 ${
-            isTransitioning ? "opacity-0" : "opacity-100"
-          }`}
-        />
-      </div>
     </div>
   );
 };
