@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import Win from "@/assets/screenshots/win.png";
 import Linux from "@/assets/screenshots/linux.png";
+import MacOS from "@/assets/screenshots/macos.png";
 import Win7 from "@/assets/screenshots/win7.png";
-import Macos from "@/assets/screenshots/macos.png";
-
+import Win from "@/assets/screenshots/win.png";
+import { useEffect, useState } from "react";
+  
 const Personalization = () => {
-  const screenshots = [Win, Linux, Win7, Macos].map((it) => it.src);
+  const screenshots = [Win, Linux, Win7, MacOS].map((it) => it.src);
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
