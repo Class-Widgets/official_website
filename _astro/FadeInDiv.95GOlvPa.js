@@ -1,0 +1,1 @@
+import{d as e,y as r}from"./hooks.module.z57d8FTj.js";import{u as s}from"./jsxRuntime.module.C14-XZ0T.js";import"./preact.module.CtyjANje.js";const l=({children:t})=>{const[a,o]=e(!1);return r(()=>{o(!0)},[]),s("div",{className:`transition-all duration-700 ease-out ${a?"opacity-100 translate-y-0":"opacity-0 translate-y-4"}`,children:t})};export{l as default};
