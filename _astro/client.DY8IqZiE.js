@@ -1,0 +1,1 @@
+const f=s=>{const u=(e,n)=>{if(!e)return;if(n in e)return e[n];const r=n.split(".");let t=e;for(const i of r)if(t&&typeof t=="object"&&i in t)t=t[i];else return;return typeof t=="string"?t:void 0};return(e,n)=>{const r=u(s,e);return r===void 0?e:r}};export{f as c};
