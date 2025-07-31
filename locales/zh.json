@@ -16,10 +16,10 @@
     "desc": "为您的桌面带来全新的个性化体验，支持Windows、macOS和Linux系统。",
     "quick_links": "快速链接",
     "systems": "平台支持",
-    "cr":"基于 GPL v3 协议发布。"
+    "cr": "基于 GPL v3 协议发布。"
   },
   "desktop": {
-    "title": "向<span class=\"gradient-text\">未来形态</span>的课程表 说你好"
+    "title": "向<span class='gradient-text'>未来形态</span>的课程表 说你好"
   },
   "personalization": {
     "tag": "# 个性化",
@@ -61,7 +61,7 @@
     },
     "windows": {
       "title": "Windows下载",
-      "description": "支持 Windows7 及以上版本\n提供 x64 和 x86 版本"
+      "description": "支持 Windows 7 及以上版本\n提供 x64 和 x86 版本"
     },
     "linux": {
       "title": "Linux下载",
