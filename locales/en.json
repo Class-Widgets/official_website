@@ -16,7 +16,7 @@
     "desc": "Bring a new personalized experience to your desktop, supporting Windows, macOS, and Linux.",
     "quick_links": "Quick Links",
     "systems": "Platform Support",
-    "cr":"Based on GPL v3 license release."
+    "cr": "Based on GPL v3 license release."
   },
   "desktop": {
     "title": "Say hello, to the <span class=\"gradient-text\">future morphology</span> of class schedule"
@@ -28,7 +28,7 @@
   },
   "compatibility": {
     "tag": "# Multi-platform Support",
-    "title": "Near-perfect\nCompatibility",
+    "title": "Near-perfect Compatibility",
     "content": "Class Widgets is built on PyQt and supports Windows, macOS, and Linux."
   },
   "misc": {
@@ -61,7 +61,7 @@
     },
     "windows": {
       "title": "Download for Windows",
-      "description": "Supports Windows 7 and above.\nWe provides x64 and x86 versions."
+      "description": "Supports Windows 7 and above.\nWe provide x64 and x86 versions."
     },
     "linux": {
       "title": "Download for Linux",
