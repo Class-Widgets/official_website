@@ -69,12 +69,13 @@
     },
     "footer": {
       "help": "Need help? Go to our <a href=\"https://github.com/Class-Widgets/Class-Widgets\" style=\"color: #007bff;\">Github</a> or join the <a href=\"https://github.com/orgs/Class-Widgets/discussions\" style=\"color: #007bff;\">Community</a>",
-      "security": "All downloads are digitally signed and security verified"
+      "security": "All downloads are security verified"
     }
   },
   "version": {
     "loading": "Fetching latest version information...",
     "latest": "Latest Version",
+    "pre_release": "Pre-release Version",
     "published": "Published Date"
   },
   "vercard": {

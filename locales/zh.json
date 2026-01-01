@@ -69,12 +69,13 @@
     },
     "footer": {
       "help": "需要帮助？前往我们的 <a href=\"https://github.com/Class-Widgets/Class-Widgets\" style=\"color: #007bff;\">Github</a> 或者加入 <a href=\"https://github.com/orgs/Class-Widgets/discussions\" style=\"color: #007bff;\">社群</a>",
-      "security": "所有下载均经过数字签名和安全验证"
+      "security": "所有下载均经过安全验证"
     }
   },
   "version": {
     "loading": "正在获取最新版本信息...",
     "latest": "最新版本",
+    "pre_release": "预发布版本",
     "published": "发布日期"
   },
   "vercard": {

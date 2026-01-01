@@ -9,10 +9,20 @@ import {detectPlatformFromUserAgent} from "plat.ts";
 import type { Translations } from "@gudupao/astro-i18n";
 import { createClientTranslator } from "@gudupao/astro-i18n/client";
 
+interface ReleaseVersion {
+  tag_name: string;
+  published_at: string;
+  prerelease: boolean;
+  assets: Array<{
+    name: string;
+    browser_download_url: string;
+  }>;
+}
+
 const Download = ({ translations }: { translations: Translations }) => {
   const t = createClientTranslator(translations);
   const [activeTab, setActiveTab] = useState("windows");
-  const [activeIndex, setActiveIndex] = useState(0); // 添加滑动索引状态
+  const [activeIndex, setActiveIndex] = useState(0);
   const [sliderPosition, setSliderPosition] = useState({
     width: 0,
     left: 0,
@@ -20,12 +30,15 @@ const Download = ({ translations }: { translations: Translations }) => {
     height: 0
   });
   const tabsRef = useRef<HTMLDivElement>(null);
-  const [loaded, setLoaded] = useState(false); // 新增状态
-  const [useProxy, setUseProxy] = useState(true); // 新增代理开关状态
-  const [latestVer, setLatestVer] = useState<string | null>(null); // 新增最新版本状态
-  const [publishedDate, setPublishedDate] = useState<string | null>(null); // 新增发布日期状态
-  const [loading, setLoading] = useState(true); // 新增加载状态
-
+  const [loaded, setLoaded] = useState(false);
+  const [useProxy, setUseProxy] = useState(true);
+  const [latestVer, setLatestVer] = useState<string | null>(null);
+  const [publishedDate, setPublishedDate] = useState<string | null>(null);
+  const [prereleaseVer, setPrereleaseVer] = useState<string | null>(null);
+  const [prereleaseDate, setPrereleaseDate] = useState<string | null>(null);
+  const [prereleaseAssets, setPrereleaseAssets] = useState<Array<{name: string, browser_download_url: string}>>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedVersion, setSelectedVersion] = useState<'stable' | 'prerelease'>('stable'); // 版本切换状态
 
   // 添加哈希值到平台ID的映射
   const hashToPlatform: Record<string, string> = {
@@ -87,38 +100,158 @@ const Download = ({ translations }: { translations: Translations }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, [activeTab]);
 
-  // 获取最新release版本号
+  // 获取release版本号
   useEffect(() => {
-    const fetchLatestRelease = async () => {
+    const fetchReleases = async () => {
       try {
-        const response = await fetch('https://ghfile.geekertao.top/https://api.github.com/repos/Class-Widgets/Class-Widgets/releases/latest');
+        const response = await fetch('https://ghfile.geekertao.top/https://api.github.com/repos/Class-Widgets/Class-Widgets/releases');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data = await response.json();
-        setLatestVer(data.tag_name);
-        // 格式化日期
-        const date = new Date(data.published_at);
-        setPublishedDate(date.toLocaleDateString('zh-CN')); // 格式化为本地日期字符串
+        const releases: ReleaseVersion[] = await response.json();
+        const latestStable = releases.find(release => !release.prerelease);
+        if (latestStable) {
+          setLatestVer(latestStable.tag_name);
+          const date = new Date(latestStable.published_at);
+          setPublishedDate(date.toLocaleDateString('zh-CN'));
+        }
+        const latestPrerelease = releases.find(release => release.prerelease);
+        if (latestPrerelease && latestStable) {
+          // 只有预发布版本比正式版本新时才显示
+          const stableDate = new Date(latestStable.published_at);
+          const prereleaseDate = new Date(latestPrerelease.published_at);
+          if (prereleaseDate > stableDate) {
+            setPrereleaseVer(latestPrerelease.tag_name);
+            setPrereleaseDate(prereleaseDate.toLocaleDateString('zh-CN'));
+            setPrereleaseAssets(latestPrerelease.assets);
+          }
+        }
+
       } catch (error) {
-        console.error("获取最新release失败:", error);
+        console.error("获取releases失败:", error);
         // 失败时使用默认版本号和空日期
-        setLatestVer('v1.1.7.1');
+        setLatestVer('v1.2.0.1');
         setPublishedDate(null);
+        setPrereleaseVer(null);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLatestRelease();
+    fetchReleases();
   }, []);
+  const parseAssetName = (assetName: string, platform: string, arch: string) => {
+    // 匹配格式：ClassWidgets-{Platform}-{Arch}_{BuildNumber}.zip
+    const pattern = new RegExp(`ClassWidgets-${platform}-${arch}(?:_\\d+)?\\.zip`, 'i');
+    return pattern.test(assetName);
+  };
+  const generateDownloadData = () => {
+    const currentVer = selectedVersion === 'prerelease' && prereleaseVer ? prereleaseVer : (latestVer || 'v1.1.7.1');
+    if (selectedVersion === 'prerelease' && prereleaseAssets.length > 0) {
+      return {
+        macos: {
+          title: t("download.macos.title"),
+          description: t("download.macos.description"),
+          downloads: [
+            {
+              name: currentVer,
+              type: "Apple Silicon",
+              url: getDownloadUrl(prereleaseAssets.find(asset => parseAssetName(asset.name, 'Macos', 'arm64'))?.browser_download_url ||
+                `https://github.com/Class-Widgets/Class-Widgets/releases/download/${currentVer}/ClassWidgets-macOS-arm64.zip`)
+            },
+            {
+              name: currentVer,
+              type: "Intel",
+              url: getDownloadUrl(prereleaseAssets.find(asset => parseAssetName(asset.name, 'Macos', 'x64'))?.browser_download_url ||
+                `https://github.com/Class-Widgets/Class-Widgets/releases/download/${currentVer}/ClassWidgets-macOS-x64.zip`)
+            }
+          ]
+        },
+        windows: {
+          title: t("download.windows.title"),
+          description: t("download.windows.description"),
+          downloads: [
+            {
+              name: currentVer,
+              type: "x64",
+              url: getDownloadUrl(prereleaseAssets.find(asset => parseAssetName(asset.name, 'Windows', 'x64'))?.browser_download_url ||
+                `https://github.com/Class-Widgets/Class-Widgets/releases/download/${currentVer}/ClassWidgets-Windows-x64.zip`)
+            },
+            {
+              name: currentVer,
+              type: "x86",
+              url: getDownloadUrl(prereleaseAssets.find(asset => parseAssetName(asset.name, 'Windows', 'x86'))?.browser_download_url ||
+                `https://github.com/Class-Widgets/Class-Widgets/releases/download/${currentVer}/ClassWidgets-Windows-x86.zip`)
+            }
+          ]
+        },
+        linux: {
+          title: t("download.linux.title"),
+          description: t("download.linux.description"),
+          downloads: [
+            {
+              name: currentVer,
+              type: "Debian",
+              url: getDownloadUrl(prereleaseAssets.find(asset => parseAssetName(asset.name, 'Linux', 'x64'))?.browser_download_url ||
+                `https://github.com/Class-Widgets/Class-Widgets/releases/download/${currentVer}/ClassWidgets-Linux-x64.zip`)
+            }
+          ]
+        }
+      };
+    }
+    return {
+      macos: {
+        title: t("download.macos.title"),
+        description: t("download.macos.description"),
+        downloads: [
+          {
+            name: currentVer,
+            type: "Apple Silicon",
+            url: getDownloadUrl(`https://github.com/Class-Widgets/Class-Widgets/releases/download/${currentVer}/ClassWidgets-macOS-arm64.zip`)
+          },
+          {
+            name: currentVer,
+            type: "Intel",
+            url: getDownloadUrl(`https://github.com/Class-Widgets/Class-Widgets/releases/download/${currentVer}/ClassWidgets-macOS-x64.zip`)
+          }
+        ]
+      },
+      windows: {
+        title: t("download.windows.title"),
+        description: t("download.windows.description"),
+        downloads: [
+          {
+            name: currentVer,
+            type: "x64",
+            url: getDownloadUrl(`https://github.com/Class-Widgets/Class-Widgets/releases/download/${currentVer}/ClassWidgets-Windows-x64.zip`)
+          },
+          {
+            name: currentVer,
+            type: "x86",
+            url: getDownloadUrl(`https://github.com/Class-Widgets/Class-Widgets/releases/download/${currentVer}/ClassWidgets-Windows-x86.zip`)
+          }
+        ]
+      },
+      linux: {
+        title: t("download.linux.title"),
+        description: t("download.linux.description"),
+        downloads: [
+          {
+            name: currentVer,
+            type: "Debian",
+            url: getDownloadUrl(`https://github.com/Class-Widgets/Class-Widgets/releases/download/${currentVer}/ClassWidgets-Linux-x64.zip`)
+          }
+        ]
+      }
+    };
+  };
 
   const platforms = [
     { id: "windows", name: "Windows", icon: Windows },
     { id: "macos", name: "macOS", icon: Apple },
     { id: "linux", name: "Linux", icon: Linux },
   ];
-  
+
   // 根据activeTab更新activeIndex
   useEffect(() => {
     const index = platforms.findIndex(p => p.id === activeTab);
@@ -131,53 +264,7 @@ const Download = ({ translations }: { translations: Translations }) => {
     return useProxy ? proxy + baseUrl : baseUrl;
   };
 
-  const downloadData = {
-    macos: {
-      title: t("download.macos.title"),
-      description: t("download.macos.description"),
-      downloads: [
-        {
-          name: ver,
-          type: "Apple Silicon",
-          url: getDownloadUrl(`https://github.com/Class-Widgets/Class-Widgets/releases/download/${ver}/ClassWidgets-macOS-arm64.zip`)
-
-        },
-        {
-          name: ver,
-          type: "Intel",
-          url: getDownloadUrl(`https://github.com/Class-Widgets/Class-Widgets/releases/download/${ver}/ClassWidgets-macOS-x64.zip`)
-
-        }
-      ]
-    },
-    windows: {
-      title: t("download.windows.title"),
-      description: t("download.windows.description"),
-      downloads: [
-        {
-          name: ver,
-          type: "x64",
-          url: getDownloadUrl(`https://github.com/Class-Widgets/Class-Widgets/releases/download/${ver}/ClassWidgets-Windows-x64.zip`)
-        },
-        {
-          name: ver,
-          type: "x86",
-          url: getDownloadUrl(`https://github.com/Class-Widgets/Class-Widgets/releases/download/${ver}/ClassWidgets-Windows-x86.zip`)
-        }
-      ]
-    },
-    linux: {
-      title: t("download.linux.title"),
-      description: t("download.linux.description"),
-      downloads: [
-        {
-          name: ver,
-          type: "Debian",
-          url: getDownloadUrl(`https://github.com/Class-Widgets/Class-Widgets/releases/download/${ver}/ClassWidgets-Linux-x64.zip`)
-        },
-      ]
-    }
-  };
+  const downloadData = generateDownloadData();
 
   const currentPlatform = downloadData[activeTab as keyof typeof downloadData];
 
@@ -190,8 +277,76 @@ const Download = ({ translations }: { translations: Translations }) => {
           <p className="text-xl text-gray-300 max-w-3xl leading-relaxed" data-aos="fade-right">
             <span dangerouslySetInnerHTML={{ __html: t("download.description") }} />
           </p><br/>
-          {/* 添加显示最新版本 */}
-          <div data-aos="fade-right"><Version latestVer={latestVer} publishedDate={publishedDate} loading={loading} translations={translations} /></div>
+
+          {/* 版本选择卡片 */}
+          <div className="flex flex-wrap gap-4 mb-8" data-aos="fade-right">
+            {/* 正式版本卡片 */}
+            <a
+              onClick={(e) => {
+                e.preventDefault();
+                setSelectedVersion('stable');
+              }}
+              className={`cursor-pointer p-4 bg-white/5 rounded-lg shadow-md inline-flex items-center gap-4 border border-white/10 transition-all duration-300 ${
+                selectedVersion === 'stable'
+                  ? 'bg-white/10 border-white/30 shadow-lg'
+                  : 'hover:bg-white/8'
+              }`}
+            >
+              {loading ? (
+                <span className="text-sm text-gray-400">{t("version.loading")}</span>
+              ) : (
+                <>
+                  <img
+                    src={logoImage.src}
+                    alt="Class Widgets Logo"
+                    className="size-12"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg font-semibold text-white">{t("version.latest")}: {latestVer || 'v1.1.7.1'}</span>
+                      <span className="px-2 py-1 rounded-md text-xs font-medium bg-green-500/20 text-green-300 border border-green-500/30">
+                        {t("version.latest")}
+                      </span>
+                    </div>
+                    {publishedDate && <span className="text-sm text-gray-400 block">{t("version.published")}: {publishedDate}</span>}
+                  </div>
+                </>
+              )}
+            </a>
+
+            {/* 预发布版本卡片 */}
+            {prereleaseVer && (
+              <a
+                onClick={(e) => {
+                  e.preventDefault();
+                  setSelectedVersion('prerelease');
+                }}
+                className={`cursor-pointer p-4 bg-white/5 rounded-lg shadow-md inline-flex items-center gap-4 border border-white/10 transition-all duration-300 ${
+                  selectedVersion === 'prerelease'
+                    ? 'bg-white/10 border-white/30 shadow-lg'
+                    : 'hover:bg-white/8'
+                }`}
+              >
+                <>
+                  <img
+                    src={logoImage.src}
+                    alt="Class Widgets Logo"
+                    className="size-12"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg font-semibold text-white">{t("version.pre_release")}: {prereleaseVer}</span>
+                      <span className="px-2 py-1 rounded-md text-xs font-medium bg-orange-500/20 text-orange-300 border border-orange-500/30">
+                        {t("version.pre_release")}
+                      </span>
+                    </div>
+                    {prereleaseDate && <span className="text-sm text-gray-400 block">{t("version.published")}: {prereleaseDate}</span>}
+                  </div>
+                </>
+              </a>
+            )}
+          </div>
+
           {/* Proxy Toggle */}
           <div className="mt-8 flex items-center" data-aos="fade-right">
             <Switch
@@ -260,7 +415,7 @@ const Download = ({ translations }: { translations: Translations }) => {
                         <platform.icon className="size-8 text-white" />
                         <h2 className="text-3xl font-semibold text-white">{platformData.title}</h2>
                       </div>
-                      
+
                       <p className="text-gray-300 mb-8 whitespace-pre-line leading-relaxed">
                         {platformData.description}
                       </p>

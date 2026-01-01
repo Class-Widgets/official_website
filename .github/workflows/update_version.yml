@@ -1,4 +1,4 @@
-name: Update Version
+name: Update Version(cw1)
 
 on:
   repository_dispatch:
@@ -39,7 +39,6 @@ jobs:
           fi
           echo "[INFO] 最新 release 版本: $VERSION_RELEASE"
           echo "[INFO] 最新 beta / Nightly 版本: $VERSION_BETA"
-
           jq -n \
             --arg release "$VERSION_RELEASE" \
             --arg beta "$VERSION_BETA" \
@@ -57,22 +56,15 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: |
-            chore(version): 更新版本号
+          commit_message: |
+            chore(version-cw1): 更新版本号
 
             * 正式版: ${{ steps.fetch_versions.outputs.VERSION_RELEASE }}
             * Beta / Nightly 版: ${{ steps.fetch_versions.outputs.VERSION_BETA }}
-          title: 'chore(version): 更新版本号'
-          body: |
-            ## 版本更新
-            - **正式版**: ${{ steps.fetch_versions.outputs.VERSION_RELEASE }}
-            - **Beta / Nightly 版**: ${{ steps.fetch_versions.outputs.VERSION_BETA }}
-
-          branch: update/version-${{ github.run_id }}
-          delete-branch: true
-          committer: ChimeYao-bot <ChimeYao@outlook.jp>
-          author: ChimeYao-bot <ChimeYao@outlook.jp>
+          file_pattern: "public/version.json"
+          commit_user_name: "ChimeYao-bot"
+          commit_user_email: "ChimeYao@outlook.jp"
+          commit_author: "ChimeYao-bot <ChimeYao@outlook.jp>"

@@ -1,7 +1,7 @@
 {
   "test": "テスト",
   "hero": {
-    "title": "多様なデスクトップ時間割\n全く新しいデスクトップ授業スケジュールの形態",
+    "title": "多多様なウィジェットで、\n時間割に新しいかたちを",
     "download": "ダウンロード",
     "docs": "ドキュメント",
     "community": "コミュニティ"
@@ -69,12 +69,13 @@
     },
     "footer": {
       "help": "ヘルプが必要ですか？当社の <a href=\"https://github.com/Class-Widgets/Class-Widgets\" style=\"color: #007bff;\">Github</a> をご覧になるか、<a href=\"https://github.com/orgs/Class-Widgets/discussions\" style=\"color: #007bff;\">コミュニティ</a> に参加してください",
-      "security": "すべてのダウンロードはデジタル署名とセキュリティ検証を通過しています"
+      "security": "すべてのダウンロードはセキュリティ検証を通過しています"
     }
   },
   "version": {
     "loading": "最新バージョン情報を取得中...",
     "latest": "最新バージョン",
+    "pre_release": "プレリリース版",
     "published": "公開日"
   },
   "vercard": {
