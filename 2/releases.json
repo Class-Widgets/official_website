@@ -1,14 +1,14 @@
 {
   "release": {
-    "version": "2.0.0.dev20260110",
+    "version": "2.0.0.dev20260111",
     "url": {
-      "windows": "https://github.com/RinLit-233-shiroko/Class-Widgets-2/releases/download/2.0.0.dev20260110/ClassWidgets-2-Windows.zip"
+      "windows": "https://github.com/RinLit-233-shiroko/Class-Widgets-2/releases/download/2.0.0.dev20260111/ClassWidgets-2-Windows.zip"
     }
   },
   "alpha": {
-    "version": "2.0.0.dev20260110",
+    "version": "2.0.0.dev20260111",
     "url": {
-      "windows": "https://github.com/RinLit-233-shiroko/Class-Widgets-2/releases/download/2.0.0.dev20260110/ClassWidgets-2-Windows.zip"
+      "windows": "https://github.com/RinLit-233-shiroko/Class-Widgets-2/releases/download/2.0.0.dev20260111/ClassWidgets-2-Windows.zip"
     }
   }
 }
