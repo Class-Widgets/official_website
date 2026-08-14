@@ -1,3 +1,6 @@
+import "./app.css";
+import { Outlet } from "react-router";
+
 export default function App() {
-  return <div>Hello</div>;
+  return <div className="site-shell"><Outlet /></div>;
 }
