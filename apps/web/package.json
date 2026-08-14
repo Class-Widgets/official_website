@@ -1,0 +1,32 @@
+{
+  "name": "@cw_official_website/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "react-router build --config vite.config.ts",
+    "dev": "react-router dev --config vite.config.ts",
+    "lint": "eslint .",
+    "typecheck": "react-router typegen && tsc"
+  },
+  "dependencies": {
+    "@cw_official_website/ui": "workspace:*",
+    "gsap": "^3.15.0",
+    "i18next": "^26.3.6",
+    "isbot": "^5.2.1",
+    "lucide-react": "^1.31.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-i18next": "^17.0.11",
+    "react-router": "^8.3.0"
+  },
+  "devDependencies": {
+    "@react-router/dev": "^8.3.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^22.20.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vite": "^8.2.1"
+  }
+}

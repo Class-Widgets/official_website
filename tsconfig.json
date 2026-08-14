@@ -1,17 +1,28 @@
 {
+  "include": [
+    "apps/web/**/*",
+    "apps/web/.server/**/*",
+    "apps/web/.client/**/*",
+    "apps/web/.react-router/types/**/*"
+  ],
   "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "types": ["node", "vite/client"],
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "jsxImportSource": "react",
+    "rootDirs": ["apps/web", "apps/web/.react-router/types"],
     "paths": {
-      "@/*": ["./*"]
+      "~/*": ["./apps/web/src/*"]
     },
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
-  },
-  "exclude": ["dist"],
-  "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "components/**/*.tsx", "plat.ts"]
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true
+  }
 }

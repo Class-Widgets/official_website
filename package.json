@@ -1,34 +1,31 @@
 {
-  "name": "official-website-new",
+  "name": "cw_official_website",
+  "private": true,
   "type": "module",
-  "version": "0.0.1",
+  "packageManager": "pnpm@10.15.0",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
-  },
-  "dependencies": {
-    "@astrojs/partytown": "^2.1.4",
-    "@astrojs/react": "^4.3.0",
-    "@gudupao/astro-i18n": "latest",
-    "@tailwindcss/vite": "^4.1.7",
-    "@types/aos": "^3.0.7",
-    "aos": "3.0.0-beta.6",
-    "astro": "^5.8.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "sharp": "^0.34.2",
-    "sharp-ico": "^0.1.5",
-    "tailwindcss": "^4.1.7"
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
-    "@types/react": "^19.1.6",
-    "prettier": "^3.5.3",
-    "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-css-order": "^2.1.2",
-    "prettier-plugin-sort-json": "^4.1.1",
-    "prettier-plugin-tailwindcss": "^0.6.11"
+    "@cw_official_website/eslint-config": "workspace:*",
+    "@eslint/js": "^10.0.1",
+    "@react-router/dev": "^8.3.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^22.20.1",
+    "eslint": "^10.8.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.11.0",
+    "husky": "^9.1.7",
+    "tailwindcss": "^4.3.3",
+    "turbo": "latest",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.67.0"
+  },
+  "dependencies": {
+    "isbot": "^5"
   }
 }
