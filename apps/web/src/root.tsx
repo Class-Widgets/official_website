@@ -2,5 +2,9 @@ import "./app.css";
 import { Outlet } from "react-router";
 
 export default function App() {
-  return <div className="site-shell"><Outlet /></div>;
+  return (
+    <div className="site-shell">
+      <Outlet />
+    </div>
+  );
 }

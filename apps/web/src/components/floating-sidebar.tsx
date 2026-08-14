@@ -1,99 +1,254 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useGSAP } from "@gsap/react";
 import { Download, FileText, Moon, Sun } from "lucide-react";
 import gsap from "gsap";
 
-const CARD_WIDTH = 68;
+gsap.registerPlugin(useGSAP);
+
+const CARD_WIDTH = 74;
+const CARD_PAD = 12;
+const ICON_SIZE = 48;
 const COLLAPSED_BAR_LEFT = 6;
 const COLLAPSED_CARD_LEFT = COLLAPSED_BAR_LEFT - CARD_WIDTH;
 const EXPANDED_CARD_LEFT = 18;
 const EXPANDED_BAR_LEFT = EXPANDED_CARD_LEFT + CARD_WIDTH;
+const HANDLE_TRAVEL = EXPANDED_BAR_LEFT - COLLAPSED_BAR_LEFT;
+const CARD_TRAVEL = EXPANDED_CARD_LEFT - COLLAPSED_CARD_LEFT;
+
+const itemClassName =
+  "group pointer-events-auto relative z-10 flex h-12 w-max min-w-12 items-center overflow-hidden rounded-full transition-colors duration-300";
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function collapseLabels(labels: HTMLSpanElement[]) {
+  gsap.killTweensOf(labels);
+  gsap.to(labels, {
+    width: 0,
+    paddingRight: 0,
+    autoAlpha: 0,
+    duration: prefersReducedMotion() ? 0 : 0.22,
+    stagger: { each: 0.03, from: "end" },
+    ease: "power3.in",
+    overwrite: true,
+  });
+}
+
+function SidebarItem({
+  label,
+  ariaLabel,
+  className,
+  children,
+  href,
+  onClick,
+}: {
+  label: string;
+  ariaLabel: string;
+  className: string;
+  children: ReactNode;
+  href?: string;
+  onClick?: () => void;
+}) {
+  const labelRef = useRef<HTMLSpanElement>(null);
+
+  useGSAP(() => {
+    if (!labelRef.current) return;
+    gsap.set(labelRef.current, { width: 0, paddingRight: 0, autoAlpha: 0 });
+  }, { scope: labelRef });
+
+  const content = (
+    <>
+      <span className="grid size-12 shrink-0 place-items-center">{children}</span>
+      <span
+        className="inline-block overflow-hidden text-[13px] font-medium tracking-[-0.02em] whitespace-nowrap"
+        data-sidebar-label="true"
+        ref={labelRef}
+      >
+        {label}
+      </span>
+    </>
+  );
+
+  if (href) {
+    return (
+      <a aria-label={ariaLabel} className={className} download href={href}>
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <button aria-label={ariaLabel} className={className} onClick={onClick} type="button">
+      {content}
+    </button>
+  );
+}
 
 export function FloatingSidebar() {
+  const rootRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const glassRef = useRef<HTMLDivElement>(null);
   const isHoveringRef = useRef(false);
-  const animationIdRef = useRef(0);
+  const itemsExpandedRef = useRef(false);
+  const sidebarTlRef = useRef<gsap.core.Timeline | null>(null);
   const [isDark, setIsDark] = useState(false);
+
+  const getLabels = () => {
+    if (!cardRef.current) return [];
+    return [...cardRef.current.querySelectorAll("[data-sidebar-label]")] as HTMLSpanElement[];
+  };
+
+  useGSAP(() => {
+    if (!handleRef.current || !cardRef.current || !glassRef.current) return;
+
+    gsap.set(handleRef.current, { x: 0, autoAlpha: 1 });
+    gsap.set(cardRef.current, {
+      x: 0,
+      autoAlpha: 0,
+      scale: 0.94,
+      transformOrigin: "left center",
+    });
+    gsap.set(glassRef.current, { width: CARD_WIDTH });
+
+    return () => {
+      sidebarTlRef.current?.kill();
+    };
+  }, { scope: rootRef });
+
+  const setItemsExpanded = (expanded: boolean) => {
+    if (!glassRef.current) return;
+    if (itemsExpandedRef.current === expanded) return;
+    itemsExpandedRef.current = expanded;
+
+    const labels = getLabels();
+    const instant = prefersReducedMotion();
+    gsap.killTweensOf([glassRef.current, ...labels]);
+
+    if (expanded) {
+      if (handleRef.current) {
+        gsap.to(handleRef.current, {
+          autoAlpha: 0,
+          duration: instant ? 0 : 0.14,
+          ease: "power2.out",
+          overwrite: "auto",
+        });
+      }
+
+      const widths = labels.map((label) => {
+        gsap.set(label, { width: "auto", paddingRight: 14, autoAlpha: 0 });
+        const width = label.offsetWidth;
+        gsap.set(label, { width: 0, paddingRight: 0, autoAlpha: 0 });
+        return width;
+      });
+      const glassWidth = CARD_PAD + ICON_SIZE + Math.max(0, ...widths) + CARD_PAD;
+
+      gsap.to(labels, {
+        width: (index: number) => widths[index] ?? 0,
+        paddingRight: 14,
+        autoAlpha: 1,
+        duration: instant ? 0 : 0.4,
+        stagger: instant ? 0 : 0.045,
+        ease: "power3.out",
+        overwrite: true,
+      });
+      gsap.to(glassRef.current, {
+        width: glassWidth,
+        duration: instant ? 0 : 0.42,
+        ease: "power3.out",
+        overwrite: true,
+      });
+      return;
+    }
+
+    collapseLabels(labels);
+    gsap.to(glassRef.current, {
+      width: CARD_WIDTH,
+      duration: instant ? 0 : 0.28,
+      ease: "power3.in",
+      overwrite: true,
+    });
+  };
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
 
-  useLayoutEffect(() => {
-    if (!handleRef.current || !cardRef.current) return;
+  useGSAP(() => {
+    if (!itemsExpandedRef.current || !glassRef.current) return;
 
-    gsap.set(handleRef.current, {
-      left: `${COLLAPSED_BAR_LEFT}px`,
-      opacity: 1,
-    });
-    gsap.set(cardRef.current, {
-      left: `${COLLAPSED_CARD_LEFT}px`,
-      opacity: 0,
-    });
-  }, []);
+    const labels = getLabels();
+    let maxLabelWidth = 0;
+    for (const label of labels) {
+      gsap.set(label, { width: "auto", paddingRight: 14, autoAlpha: 1 });
+      maxLabelWidth = Math.max(maxLabelWidth, label.offsetWidth);
+    }
+    gsap.set(glassRef.current, { width: CARD_PAD + ICON_SIZE + maxLabelWidth + CARD_PAD });
+  }, { dependencies: [isDark], scope: rootRef });
 
   const animateSidebar = (expanded: boolean) => {
-    if (!handleRef.current || !cardRef.current) return;
-
-    // 1. 忽略已经过期的鼠标状态，避免展开和收起互相抢动画。
+    if (!handleRef.current || !cardRef.current || !glassRef.current) return;
     if (expanded !== isHoveringRef.current) return;
 
-    const animationId = ++animationIdRef.current;
+    const instant = prefersReducedMotion();
+    sidebarTlRef.current?.kill();
     gsap.killTweensOf([handleRef.current, cardRef.current]);
+
     if (expanded) {
-      // 每次展开都从收起坐标重新开始，避免沿用上一次动画的终点。
-      gsap.set(handleRef.current, {
-        left: `${COLLAPSED_BAR_LEFT}px`,
-        opacity: 1,
-      });
-      gsap.set(cardRef.current, {
-        left: `${COLLAPSED_CARD_LEFT}px`,
-        opacity: 0,
-      });
+      gsap.set(handleRef.current, { x: 0, autoAlpha: 1 });
+      gsap.set(cardRef.current, { x: 0, autoAlpha: 0, scale: 0.94 });
 
-      gsap.timeline({ defaults: { overwrite: true } })
+      if (instant) {
+        gsap.set(handleRef.current, { x: HANDLE_TRAVEL, autoAlpha: 0 });
+        gsap.set(cardRef.current, { x: CARD_TRAVEL, autoAlpha: 1, scale: 1 });
+        return;
+      }
+
+      sidebarTlRef.current = gsap.timeline({ defaults: { overwrite: true, force3D: true } })
         .to(handleRef.current, {
-          left: `${EXPANDED_BAR_LEFT}px`,
-          duration: 0.75,
-          ease: "back.out(1.4)",
+          x: HANDLE_TRAVEL,
+          duration: 0.68,
+          ease: "power4.out",
         })
         .to(cardRef.current, {
-          left: `${EXPANDED_CARD_LEFT}px`,
-          opacity: 1,
-          duration: 0.56,
+          x: CARD_TRAVEL,
+          autoAlpha: 1,
+          scale: 1,
+          duration: 0.52,
           ease: "power3.out",
-        }, 0.46)
-        // 2. 只有滑动动画仍是当前动画时才渐隐，收起动画会让序号失效。
-        .call(() => {
-          if (animationId === animationIdRef.current) {
-            gsap.to(handleRef.current, {
-              opacity: 0,
-              duration: 0.36,
-              ease: "power2.out",
-              overwrite: true,
-            });
-          }
-        });
-    } else {
-      // 3. 先完整收回卡片，再让白条在原位渐显。
-      gsap.set(handleRef.current, {
-        left: `${COLLAPSED_BAR_LEFT}px`,
-        opacity: 0,
-      });
-
-      gsap.timeline({ defaults: { overwrite: true } })
-        .to(cardRef.current, {
-          left: `${COLLAPSED_CARD_LEFT}px`,
-          opacity: 0,
-          duration: 0.36,
-          ease: "power3.in",
-        })
+        }, 0.36)
         .to(handleRef.current, {
-          opacity: 1,
-          duration: 0.3,
+          autoAlpha: 0,
+          duration: 0.22,
           ease: "power2.out",
-        });
+          overwrite: "auto",
+        }, 0.42);
+      return;
     }
+
+    setItemsExpanded(false);
+    gsap.set(handleRef.current, { x: 0, autoAlpha: 0 });
+
+    if (instant) {
+      gsap.set(cardRef.current, { x: 0, autoAlpha: 0, scale: 0.94 });
+      gsap.set(handleRef.current, { autoAlpha: 1 });
+      return;
+    }
+
+    sidebarTlRef.current = gsap.timeline({ defaults: { overwrite: true, force3D: true } })
+      .to(cardRef.current, {
+        x: 0,
+        autoAlpha: 0,
+        scale: 0.96,
+        duration: 0.32,
+        ease: "power3.in",
+      })
+      .to(handleRef.current, {
+        autoAlpha: 1,
+        duration: 0.28,
+        ease: "power2.out",
+      });
   };
 
   const handleMouseEnter = () => {
@@ -108,45 +263,60 @@ export function FloatingSidebar() {
 
   return (
     <div
-      className="fixed left-0 top-1/2 z-8 h-83.75 w-70 -translate-y-1/2"
+      className="fixed left-0 top-1/2 z-8 h-56 w-70 -translate-y-1/2"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      aria-hidden="true"
+      ref={rootRef}
     >
       <div
-        className="pointer-events-none absolute top-1/2 z-10 h-31 w-1.5 -translate-y-1/2 rounded-full bg-[#465366] opacity-100 shadow-[0_0_0_1px_rgb(70_83_102/0.24),0_2px_13px_rgb(25_35_50/0.24)] dark:bg-white dark:shadow-[0_0_0_1px_rgb(255_255_255/0.7),0_2px_13px_rgb(25_35_50/0.24)]"
+        className="sidebar-handle pointer-events-none absolute top-1/2 z-8 h-28 w-1 -translate-y-1/2 rounded-full"
         style={{ left: `${COLLAPSED_BAR_LEFT}px` }}
         ref={handleRef}
       />
       <div
-        className="pointer-events-none absolute top-0 z-9 flex h-83.75 w-17 flex-col items-center justify-center gap-4 rounded-[38px] border border-white/90 bg-white/65 py-5 opacity-0 shadow-[0_20px_60px_rgb(23_47_75/0.12)] backdrop-blur-3xl dark:border-white/10 dark:bg-[#232a35]/70"
+        className="pointer-events-none absolute top-0 z-9 flex h-56 flex-col items-start justify-center opacity-0"
         style={{ left: `${COLLAPSED_CARD_LEFT}px` }}
         ref={cardRef}
       >
-        <a
-          aria-label="下载产品手册"
-          className="pointer-events-auto grid size-12 place-items-center rounded-full bg-white/15 text-[#17202b] transition hover:scale-105 hover:bg-[#1e6eff]/10 hover:text-[#1e6eff] dark:text-[#f1f5fa]"
-          href="/docs/product-guide.pdf"
-          download
+        <div
+          className="frosted-glass pointer-events-none absolute inset-y-0 left-0 rounded-[42px]"
+          aria-hidden="true"
+          ref={glassRef}
+        />
+        <div
+          className="pointer-events-auto relative z-10 flex h-full flex-col items-start justify-center gap-3 py-5 pr-3 pl-3"
+          onMouseEnter={() => setItemsExpanded(true)}
+          onMouseLeave={() => setItemsExpanded(false)}
         >
-          <Download size={21} strokeWidth={1.7} />
-        </a>
-        <a
-          aria-label="下载开发者文档"
-          className="pointer-events-auto grid size-12 place-items-center rounded-full text-[#77808c] transition hover:scale-105 hover:bg-[#1e6eff]/10 hover:text-[#1e6eff] dark:text-[#929aa6]"
-          href="/docs/developer-guide.pdf"
-          download
-        >
-          <FileText size={21} strokeWidth={1.7} />
-        </a>
-        <button
-          aria-label={isDark ? "切换到浅色模式" : "切换到深色模式"}
-          className="pointer-events-auto grid size-12 cursor-pointer place-items-center rounded-full text-[#77808c] transition hover:scale-105 hover:bg-[#1e6eff]/10 hover:text-[#1e6eff] dark:text-[#929aa6]"
-          onClick={() => setIsDark((current) => !current)}
-          type="button"
-        >
-          {isDark ? <Moon size={20} /> : <Sun size={20} />}
-        </button>
+          <SidebarItem
+            ariaLabel="下载产品手册"
+            className={`frosted-glass-chip ${itemClassName} text-[#17202b] hover:bg-white/40 hover:text-[#1e6eff] dark:text-white/82 dark:hover:bg-white/14 dark:hover:text-white`}
+            href="/docs/product-guide.pdf"
+            label="产品手册"
+          >
+            <Download className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:scale-105" size={21} strokeWidth={1.7} />
+          </SidebarItem>
+          <SidebarItem
+            ariaLabel="下载开发者文档"
+            className={`${itemClassName} text-[#536171] hover:bg-white/30 hover:text-[#17202b] dark:text-white/48 dark:hover:bg-white/8 dark:hover:text-white/82`}
+            href="/docs/developer-guide.pdf"
+            label="开发者文档"
+          >
+            <FileText className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:scale-105" size={21} strokeWidth={1.7} />
+          </SidebarItem>
+          <SidebarItem
+            ariaLabel={isDark ? "切换到浅色模式" : "切换到深色模式"}
+            className={`${itemClassName} cursor-pointer text-[#536171] hover:bg-white/30 hover:text-[#17202b] dark:text-white/48 dark:hover:bg-white/8 dark:hover:text-white/82`}
+            label={isDark ? "浅色模式" : "深色模式"}
+            onClick={() => setIsDark((current) => !current)}
+          >
+            {isDark ? (
+              <Moon className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-12 group-hover:scale-105" size={20} />
+            ) : (
+              <Sun className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-45 group-hover:scale-105" size={20} />
+            )}
+          </SidebarItem>
+        </div>
       </div>
     </div>
   );
