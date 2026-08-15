@@ -10,3 +10,14 @@
   --home-bg-from: #0b141c;
   --home-bg-to: #151d26;
 }
+
+@keyframes hint-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(3px);
+  }
+}

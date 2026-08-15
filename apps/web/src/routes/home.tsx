@@ -5,6 +5,7 @@ import coverImage from "../assets/home/cover.png";
 import logoImage from "../assets/home/cw2_logo.png";
 import { FloatingSidebar, type SidebarOccupyChange } from "../components/floating-sidebar";
 import { HeroActions } from "../components/hero-actions";
+import { ScrollHint } from "../components/scroll-hint";
 
 gsap.registerPlugin(useGSAP);
 
@@ -43,6 +44,7 @@ export default function Home() {
   const stageRef = useRef<HTMLDivElement>(null);
   const taglineRef = useRef<HTMLParagraphElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
+  const hintRef = useRef<HTMLDivElement>(null);
   const occupyRef = useRef({ edge: 0 });
   const occupyTweenRef = useRef<gsap.core.Tween | null>(null);
   const introTlRef = useRef<gsap.core.Timeline | null>(null);
@@ -64,7 +66,8 @@ export default function Home() {
     const stage = stageRef.current;
     const tagline = taglineRef.current;
     const actions = actionsRef.current;
-    if (!brand || !logo || !title || !cover || !heroStack || !stage || !tagline || !actions) {
+    const hint = hintRef.current;
+    if (!brand || !logo || !title || !cover || !heroStack || !stage || !tagline || !actions || !hint) {
       return () => {
         occupyTweenRef.current?.kill();
       };
@@ -74,6 +77,7 @@ export default function Home() {
 
     gsap.set([logo, title, cover, tagline], { autoAlpha: 0, force3D: true });
     gsap.set(actions, { autoAlpha: 0, y: 16, force3D: true });
+    gsap.set(hint, { autoAlpha: 0, y: 8, force3D: true });
 
     const playIntro = () => {
       if (cancelled) return;
@@ -98,6 +102,7 @@ export default function Home() {
         gsap.set(cover, { y: coverShift, autoAlpha: 1, scale: 1 });
         gsap.set([logo, title, tagline], { autoAlpha: 1, scale: 1 });
         gsap.set(actions, { autoAlpha: 1, y: coverShift });
+        gsap.set(hint, { autoAlpha: 1, y: 0 });
         return;
       }
 
@@ -146,7 +151,12 @@ export default function Home() {
         .to(actions, {
           autoAlpha: 1,
           duration: 0.36,
-        }, "-=0.22");
+        }, "-=0.22")
+        .to(hint, {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.4,
+        }, "-=0.12");
     };
 
     const startIntro = async () => {
@@ -243,6 +253,10 @@ export default function Home() {
               ref={actionsRef}
             />
           </div>
+          <ScrollHint
+            className="absolute inset-x-0 bottom-3 z-2 flex flex-col items-center gap-0.5 text-[11px] font-medium tracking-[0.08em] text-[#4a6d82]/62 opacity-0 sm:bottom-4 dark:text-white/38"
+            ref={hintRef}
+          />
         </div>
       </div>
       <FloatingSidebar onOccupy={handleOccupy} />
