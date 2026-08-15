@@ -4,6 +4,7 @@ import gsap from "gsap";
 import coverImage from "../assets/home/cover.png";
 import logoImage from "../assets/home/cw2_logo.png";
 import { FloatingSidebar, type SidebarOccupyChange } from "../components/floating-sidebar";
+import { HeroActions } from "../components/hero-actions";
 
 gsap.registerPlugin(useGSAP);
 
@@ -41,6 +42,7 @@ export default function Home() {
   const heroStackRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const taglineRef = useRef<HTMLParagraphElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
   const occupyRef = useRef({ edge: 0 });
   const occupyTweenRef = useRef<gsap.core.Tween | null>(null);
   const introTlRef = useRef<gsap.core.Timeline | null>(null);
@@ -61,7 +63,8 @@ export default function Home() {
     const heroStack = heroStackRef.current;
     const stage = stageRef.current;
     const tagline = taglineRef.current;
-    if (!brand || !logo || !title || !cover || !heroStack || !stage || !tagline) {
+    const actions = actionsRef.current;
+    if (!brand || !logo || !title || !cover || !heroStack || !stage || !tagline || !actions) {
       return () => {
         occupyTweenRef.current?.kill();
       };
@@ -70,6 +73,7 @@ export default function Home() {
     let cancelled = false;
 
     gsap.set([logo, title, cover, tagline], { autoAlpha: 0, force3D: true });
+    gsap.set(actions, { autoAlpha: 0, y: 16, force3D: true });
 
     const playIntro = () => {
       if (cancelled) return;
@@ -93,6 +97,7 @@ export default function Home() {
         gsap.set(heroStack, { y: liftY(), scale: HERO_LIFT_SCALE });
         gsap.set(cover, { y: coverShift, autoAlpha: 1, scale: 1 });
         gsap.set([logo, title, tagline], { autoAlpha: 1, scale: 1 });
+        gsap.set(actions, { autoAlpha: 1, y: coverShift });
         return;
       }
 
@@ -128,9 +133,18 @@ export default function Home() {
           duration: 0.34,
           ease: "power3.inOut",
         }, "-=0.08")
+        .to(actions, {
+          y: coverShift,
+          duration: 0.34,
+          ease: "power3.inOut",
+        }, "<")
         .to(tagline, {
           autoAlpha: 1,
           scale: 1,
+          duration: 0.36,
+        }, "-=0.22")
+        .to(actions, {
+          autoAlpha: 1,
           duration: 0.36,
         }, "-=0.22");
     };
@@ -223,6 +237,10 @@ export default function Home() {
               className="h-auto max-h-[min(56svh,620px)] w-full max-w-6xl origin-center object-contain opacity-0 will-change-transform drop-shadow-[0_28px_56px_rgb(24_42_66/0.22)] dark:drop-shadow-[0_32px_72px_rgb(0_0_0/0.55)]"
               ref={coverRef}
               src={coverImage}
+            />
+            <HeroActions
+              className="z-2 mt-3 flex items-center justify-center gap-3 opacity-0"
+              ref={actionsRef}
             />
           </div>
         </div>
