@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useGSAP } from "@gsap/react";
 import { Download, FileText, Moon, Pin, PinOff, Sun } from "lucide-react";
 import gsap from "gsap";
+import { useTheme } from "../lib/theme";
 
 gsap.registerPlugin(useGSAP);
 
@@ -140,7 +141,7 @@ export function FloatingSidebar({
   const canHoverRef = useRef(canHoverFine());
   const animateSidebarRef = useRef<(expanded: boolean) => void>(() => {});
   const setItemsExpandedRef = useRef<(expanded: boolean) => void>(() => {});
-  const [isDark, setIsDark] = useState(false);
+  const { isDark, toggleTheme } = useTheme();
   const [isPinned, setIsPinned] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [useHover, setUseHover] = useState(canHoverFine);
@@ -246,10 +247,6 @@ export function FloatingSidebar({
     });
     if (isOccupied()) emitOccupy(CARD_WIDTH, 0.45);
   };
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDark);
-  }, [isDark]);
 
   useGSAP(() => {
     if (!itemsExpandedRef.current || !glassRef.current) return;
@@ -462,7 +459,7 @@ export function FloatingSidebar({
               ariaLabel={isDark ? "切换到浅色模式" : "切换到深色模式"}
               className={`${itemClassName} ${itemMutedClassName} cursor-pointer`}
               label={isDark ? "浅色模式" : "深色模式"}
-              onClick={() => setIsDark((current) => !current)}
+              onClick={toggleTheme}
             >
               {isDark ? (
                 <Moon className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-12 group-hover:scale-105" size={20} />

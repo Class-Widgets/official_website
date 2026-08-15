@@ -2,11 +2,13 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
+  color-scheme: light;
   --home-bg-from: #dceef5;
   --home-bg-to: #f8fdff;
 }
 
 .dark {
+  color-scheme: dark;
   --home-bg-from: #0b141c;
   --home-bg-to: #151d26;
 }
