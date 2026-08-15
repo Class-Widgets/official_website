@@ -15,6 +15,12 @@ const EXPANDED_BAR_LEFT = EXPANDED_CARD_LEFT + CARD_WIDTH;
 const HANDLE_TRAVEL = EXPANDED_BAR_LEFT - COLLAPSED_BAR_LEFT;
 const CARD_TRAVEL = EXPANDED_CARD_LEFT - COLLAPSED_CARD_LEFT;
 
+export type SidebarOccupyChange = {
+  occupiedRight: number;
+  duration: number;
+  delay?: number;
+};
+
 const itemClassName =
   "group pointer-events-auto relative z-10 flex h-12 w-max min-w-12 items-center overflow-hidden rounded-full transition-colors duration-300";
 
@@ -94,7 +100,11 @@ function SidebarItem({
   );
 }
 
-export function FloatingSidebar() {
+export function FloatingSidebar({
+  onOccupy,
+}: {
+  onOccupy?: (change: SidebarOccupyChange) => void;
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -102,7 +112,21 @@ export function FloatingSidebar() {
   const isHoveringRef = useRef(false);
   const itemsExpandedRef = useRef(false);
   const sidebarTlRef = useRef<gsap.core.Timeline | null>(null);
+  const onOccupyRef = useRef(onOccupy);
   const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    onOccupyRef.current = onOccupy;
+  }, [onOccupy]);
+
+  const emitOccupy = (glassWidth: number, duration: number, delay = 0) => {
+    const instant = prefersReducedMotion();
+    onOccupyRef.current?.({
+      occupiedRight: isHoveringRef.current ? EXPANDED_CARD_LEFT + glassWidth : 0,
+      duration: instant ? 0 : duration,
+      delay: instant ? 0 : delay,
+    });
+  };
 
   const getLabels = () => {
     if (!cardRef.current) return [];
@@ -168,6 +192,7 @@ export function FloatingSidebar() {
         ease: "power3.out",
         overwrite: true,
       });
+      emitOccupy(glassWidth, 0.5);
       return;
     }
 
@@ -178,6 +203,7 @@ export function FloatingSidebar() {
       ease: "power3.in",
       overwrite: true,
     });
+    if (isHoveringRef.current) emitOccupy(CARD_WIDTH, 0.45);
   };
 
   useEffect(() => {
@@ -193,7 +219,9 @@ export function FloatingSidebar() {
       gsap.set(label, { width: "auto", paddingRight: 14, autoAlpha: 1 });
       maxLabelWidth = Math.max(maxLabelWidth, label.offsetWidth);
     }
-    gsap.set(glassRef.current, { width: CARD_PAD + ICON_SIZE + maxLabelWidth + CARD_PAD });
+    const glassWidth = CARD_PAD + ICON_SIZE + maxLabelWidth + CARD_PAD;
+    gsap.set(glassRef.current, { width: glassWidth });
+    if (isHoveringRef.current) emitOccupy(glassWidth, 0);
   }, { dependencies: [isDark], scope: rootRef });
 
   const animateSidebar = (expanded: boolean) => {
@@ -211,9 +239,11 @@ export function FloatingSidebar() {
       if (instant) {
         gsap.set(handleRef.current, { x: HANDLE_TRAVEL, autoAlpha: 0 });
         gsap.set(cardRef.current, { x: CARD_TRAVEL, autoAlpha: 1, scale: 1 });
+        emitOccupy(CARD_WIDTH, 0);
         return;
       }
 
+      emitOccupy(CARD_WIDTH, 0.55, 0.28);
       sidebarTlRef.current = gsap.timeline({ defaults: { overwrite: true, force3D: true } })
         .to(handleRef.current, {
           x: HANDLE_TRAVEL,
@@ -237,6 +267,7 @@ export function FloatingSidebar() {
     }
 
     setItemsExpanded(false);
+    emitOccupy(CARD_WIDTH, instant ? 0 : 0.55);
     gsap.set(handleRef.current, { x: 0, autoAlpha: 0 });
 
     if (instant) {
