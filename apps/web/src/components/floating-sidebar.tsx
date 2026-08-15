@@ -22,25 +22,28 @@ export type SidebarOccupyChange = {
 };
 
 const itemClassName =
-  "group pointer-events-auto relative z-10 flex h-12 w-max min-w-12 items-center overflow-hidden rounded-full transition-colors duration-300";
+  "group pointer-events-auto relative z-10 flex h-12 min-w-12 items-center justify-center overflow-hidden rounded-full transition-colors duration-300";
 
 const handleClassName =
-  "pointer-events-none absolute top-1/2 z-8 h-28 w-1 -translate-y-1/2 rounded-full bg-linear-to-b from-[#6b8098] to-[#526174] shadow-[inset_0_1px_0_rgb(255_255_255/0.3),0_0_0_1px_rgb(82_97_116/0.22),0_4px_18px_rgb(8_14_23/0.3)] after:pointer-events-none after:absolute after:-inset-1.5 after:animate-pulse after:rounded-[inherit] after:shadow-[0_0_18px_rgb(82_97_116/0.42)] after:content-[''] motion-reduce:after:animate-none dark:from-white/90 dark:to-white/62 dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.72),0_0_0_1px_rgb(255_255_255/0.42),0_4px_18px_rgb(0_0_0/0.34)] dark:after:shadow-[0_0_18px_rgb(255_255_255/0.32)]";
+  "pointer-events-none absolute top-1/2 z-8 h-28 w-1 -translate-y-1/2 rounded-full bg-linear-to-b from-[#6b8098] to-[#526174] shadow-[inset_0_1px_0_rgb(255_255_255/0.3),0_0_0_1px_rgb(82_97_116/0.18),0_2px_8px_rgb(8_14_23/0.14)] after:pointer-events-none after:absolute after:-inset-1.5 after:animate-pulse after:rounded-[inherit] after:shadow-[0_0_10px_rgb(82_97_116/0.2)] after:content-[''] motion-reduce:after:animate-none dark:from-white/90 dark:to-white/62 dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.72),0_0_0_1px_rgb(255_255_255/0.36),0_2px_8px_rgb(0_0_0/0.18)] dark:after:shadow-[0_0_10px_rgb(255_255_255/0.16)]";
 
 const glassClassName =
-  "pointer-events-none absolute inset-y-0 left-0 isolate overflow-hidden rounded-[42px] border border-white/44 bg-[linear-gradient(165deg,rgb(248_253_255/0.42)_0%,rgb(220_238_245/0.34)_46%,rgb(248_253_255/0.22)_100%)] shadow-[inset_0_1px_0_rgb(255_255_255/0.72),inset_0_-12px_22px_rgb(170_198_216/0.14),0_14px_40px_rgb(24_42_66/0.1),0_2px_6px_rgb(24_42_66/0.04)] backdrop-blur-[22px] backdrop-saturate-[1.55] dark:border-white/14 dark:bg-[linear-gradient(165deg,rgb(21_29_38/0.62)_0%,rgb(11_20_28/0.48)_48%,rgb(21_29_38/0.55)_100%)] dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.16),inset_0_-12px_22px_rgb(28_56_82/0.35),0_14px_40px_rgb(0_0_0/0.34)]";
+  "pointer-events-none absolute inset-y-0 left-0 isolate overflow-hidden rounded-[42px] border border-white/44 bg-[linear-gradient(165deg,rgb(248_253_255/0.42)_0%,rgb(220_238_245/0.34)_46%,rgb(248_253_255/0.22)_100%)] shadow-[inset_0_1px_0_rgb(255_255_255/0.7),inset_0_0_0_1px_rgb(255_255_255/0.1),0_8px_24px_-10px_rgb(24_42_66/0.08),0_2px_6px_rgb(24_42_66/0.03)] backdrop-blur-[22px] backdrop-saturate-[1.35] dark:border-white/14 dark:bg-[linear-gradient(165deg,rgb(21_29_38/0.62)_0%,rgb(11_20_28/0.48)_48%,rgb(21_29_38/0.55)_100%)] dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.14),inset_0_0_0_1px_rgb(255_255_255/0.05),0_10px_28px_-12px_rgb(0_0_0/0.22),0_2px_8px_rgb(0_0_0/0.1)]";
 
-const chipClassName =
-  "border border-white/50 bg-linear-to-b from-white/55 to-[#dceef5]/40 shadow-[inset_0_1px_0_rgb(255_255_255/0.7),0_6px_16px_rgb(90_148_180/0.1)] backdrop-blur-md backdrop-saturate-[1.35] dark:border-white/12 dark:from-white/14 dark:to-[#151d26]/55 dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.14),0_6px_16px_rgb(0_0_0/0.22)]";
-
-const itemPrimaryClassName =
-  "text-[#17202b] hover:bg-[#dceef5]/55 hover:text-[#3a8fb8] dark:text-white/82 dark:hover:bg-[#3e769e]/28 dark:hover:text-white";
+const selectedClassName =
+  "bg-[#17202b]/8 text-[#2b9fd4] dark:bg-white/12 dark:text-[#7ecdee]";
 
 const itemMutedClassName =
-  "text-[#4a6d82] hover:bg-[#dceef5]/45 hover:text-[#17202b] dark:text-white/48 dark:hover:bg-[#3e769e]/18 dark:hover:text-white/82";
+  "text-[#4a6d82] hover:bg-[#17202b]/8 hover:text-[#17202b] dark:text-white/48 dark:hover:bg-white/12 dark:hover:text-white/82";
+
+const FINE_HOVER_QUERY = "(hover: hover) and (pointer: fine)";
 
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function canHoverFine() {
+  return window.matchMedia(FINE_HOVER_QUERY).matches;
 }
 
 function collapseLabels(labels: HTMLSpanElement[]) {
@@ -84,7 +87,7 @@ function SidebarItem({
     <>
       <span className="grid size-12 shrink-0 place-items-center">{children}</span>
       <span
-        className="inline-block overflow-hidden text-[13px] font-medium tracking-[-0.02em] whitespace-nowrap"
+        className="inline-flex h-full items-center overflow-hidden text-[13px] leading-none font-medium tracking-[-0.02em] whitespace-nowrap"
         data-sidebar-label="true"
         ref={labelRef}
       >
@@ -123,14 +126,30 @@ export function FloatingSidebar({
   const itemsExpandedRef = useRef(false);
   const sidebarTlRef = useRef<gsap.core.Timeline | null>(null);
   const onOccupyRef = useRef(onOccupy);
+  const canHoverRef = useRef(canHoverFine());
+  const animateSidebarRef = useRef<(expanded: boolean) => void>(() => {});
+  const setItemsExpandedRef = useRef<(expanded: boolean) => void>(() => {});
   const [isDark, setIsDark] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [useHover, setUseHover] = useState(canHoverFine);
 
   const isOccupied = () => isHoveringRef.current || isPinnedRef.current;
 
   useEffect(() => {
     onOccupyRef.current = onOccupy;
   }, [onOccupy]);
+
+  useEffect(() => {
+    const media = window.matchMedia(FINE_HOVER_QUERY);
+    const sync = () => {
+      canHoverRef.current = media.matches;
+      setUseHover(media.matches);
+    };
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
 
   const emitOccupy = (glassWidth: number, duration: number, delay = 0) => {
     const instant = prefersReducedMotion();
@@ -241,6 +260,7 @@ export function FloatingSidebar({
     if (!handleRef.current || !cardRef.current || !glassRef.current) return;
     if (expanded === isOpenRef.current) return;
     isOpenRef.current = expanded;
+    setIsOpen(expanded);
 
     const instant = prefersReducedMotion();
     sidebarTlRef.current?.kill();
@@ -305,12 +325,19 @@ export function FloatingSidebar({
       });
   };
 
+  useEffect(() => {
+    animateSidebarRef.current = animateSidebar;
+    setItemsExpandedRef.current = setItemsExpanded;
+  });
+
   const handleMouseEnter = () => {
+    if (!canHoverRef.current) return;
     isHoveringRef.current = true;
     animateSidebar(true);
   };
 
   const handleMouseLeave = () => {
+    if (!canHoverRef.current) return;
     isHoveringRef.current = false;
     if (isPinnedRef.current) {
       setItemsExpanded(false);
@@ -318,6 +345,39 @@ export function FloatingSidebar({
     }
     animateSidebar(false);
   };
+
+  const toggleSidebar = () => {
+    if (isOpenRef.current) {
+      isHoveringRef.current = false;
+      if (isPinnedRef.current) {
+        setItemsExpanded(false);
+        return;
+      }
+      animateSidebar(false);
+      return;
+    }
+
+    isHoveringRef.current = true;
+    animateSidebar(true);
+  };
+
+  useEffect(() => {
+    const onPointerDown = (event: PointerEvent) => {
+      if (canHoverRef.current) return;
+      if (!isOpenRef.current) return;
+      if (rootRef.current?.contains(event.target as Node)) return;
+
+      isHoveringRef.current = false;
+      if (isPinnedRef.current) {
+        setItemsExpandedRef.current(false);
+        return;
+      }
+      animateSidebarRef.current(false);
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, []);
 
   const togglePinned = () => {
     const next = !isPinnedRef.current;
@@ -334,9 +394,9 @@ export function FloatingSidebar({
 
   return (
     <div
-      className="fixed left-0 top-1/2 z-8 h-72 w-70 -translate-y-1/2"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      className={`fixed left-0 top-1/2 z-8 h-72 w-70 -translate-y-1/2${useHover ? "" : " pointer-events-none"}`}
+      onMouseEnter={useHover ? handleMouseEnter : undefined}
+      onMouseLeave={useHover ? handleMouseLeave : undefined}
       ref={rootRef}
     >
       <div
@@ -344,6 +404,15 @@ export function FloatingSidebar({
         style={{ left: `${COLLAPSED_BAR_LEFT}px` }}
         ref={handleRef}
       />
+      {!useHover && !isOpen && (
+        <button
+          aria-expanded={false}
+          aria-label="展开侧栏"
+          className="pointer-events-auto absolute top-1/2 left-0 z-10 h-40 w-11 -translate-y-1/2 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2b9fd4]/70"
+          onClick={toggleSidebar}
+          type="button"
+        />
+      )}
       <div
         className="pointer-events-none absolute top-0 z-9 flex h-72 flex-col items-start justify-center opacity-0"
         style={{ left: `${COLLAPSED_CARD_LEFT}px` }}
@@ -355,13 +424,18 @@ export function FloatingSidebar({
           ref={glassRef}
         />
         <div
-          className="pointer-events-auto relative z-10 flex h-full flex-col items-start justify-center gap-3 py-5 pr-3 pl-3"
-          onMouseEnter={() => setItemsExpanded(true)}
-          onMouseLeave={() => setItemsExpanded(false)}
+          className={`relative z-10 flex h-full flex-col items-stretch justify-center gap-3 py-5 pr-3 pl-3${
+            useHover || isOpen ? " pointer-events-auto" : " pointer-events-none"
+          }`}
+          onClick={() => {
+            if (!canHoverRef.current) setItemsExpanded(true);
+          }}
+          onMouseEnter={useHover ? () => setItemsExpanded(true) : undefined}
+          onMouseLeave={useHover ? () => setItemsExpanded(false) : undefined}
         >
           <SidebarItem
             ariaLabel="下载产品手册"
-            className={`${chipClassName} ${itemClassName} ${itemPrimaryClassName}`}
+            className={`${itemClassName} ${selectedClassName}`}
             href="/docs/product-guide.pdf"
             label="产品手册"
           >
@@ -389,7 +463,7 @@ export function FloatingSidebar({
           </SidebarItem>
           <SidebarItem
             ariaLabel={isPinned ? "取消固定侧栏" : "固定侧栏"}
-            className={`${isPinned ? chipClassName : ""} ${itemClassName} cursor-pointer ${isPinned ? itemPrimaryClassName : itemMutedClassName}`}
+            className={`${itemClassName} cursor-pointer ${isPinned ? selectedClassName : itemMutedClassName}`}
             label={isPinned ? "取消固定" : "固定侧栏"}
             onClick={togglePinned}
             pressed={isPinned}
