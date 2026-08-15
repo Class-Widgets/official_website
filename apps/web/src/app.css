@@ -1,2 +1,12 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --home-bg-from: #dceef5;
+  --home-bg-to: #f8fdff;
+}
+
+.dark {
+  --home-bg-from: #0b141c;
+  --home-bg-to: #151d26;
+}
