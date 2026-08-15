@@ -19,7 +19,9 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-const HERO_LIFT_SCALE = 0.82;
+const HERO_LIFT_SCALE = 0.84;
+const BRAND_GAP = 12;
+const TAGLINE_GAP = 10;
 
 const ambientClassName =
   "pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_58%_44%_at_14%_6%,rgb(142_196_224/0.58),transparent_58%),radial-gradient(ellipse_46%_40%_at_88%_94%,rgb(168_210_230/0.46),transparent_62%),radial-gradient(ellipse_30%_26%_at_74%_14%,rgb(255_255_255/0.62),transparent_68%)] transition-[background] duration-300 dark:bg-[radial-gradient(ellipse_58%_44%_at_14%_6%,rgb(62_118_158/0.38),transparent_58%),radial-gradient(ellipse_46%_40%_at_88%_94%,rgb(28_56_82/0.55),transparent_62%),radial-gradient(ellipse_30%_26%_at_74%_14%,rgb(255_255_255/0.07),transparent_68%)]";
@@ -38,7 +40,6 @@ export default function Home() {
   const coverRef = useRef<HTMLImageElement>(null);
   const heroStackRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const taglineSlotRef = useRef<HTMLDivElement>(null);
   const taglineRef = useRef<HTMLParagraphElement>(null);
   const occupyRef = useRef({ edge: 0 });
   const occupyTweenRef = useRef<gsap.core.Tween | null>(null);
@@ -59,97 +60,95 @@ export default function Home() {
     const cover = coverRef.current;
     const heroStack = heroStackRef.current;
     const stage = stageRef.current;
-    const taglineSlot = taglineSlotRef.current;
     const tagline = taglineRef.current;
-    if (!brand || !logo || !title || !cover || !heroStack || !stage || !taglineSlot || !tagline) {
+    if (!brand || !logo || !title || !cover || !heroStack || !stage || !tagline) {
       return () => {
         occupyTweenRef.current?.kill();
       };
     }
 
-    const pinStackToTop = () => {
-      const fromY = heroStack.offsetTop;
-      gsap.set(stage, { justifyContent: "flex-start" });
-      gsap.set(heroStack, { y: fromY, transformOrigin: "50% 0%" });
+    let cancelled = false;
+
+    gsap.set([logo, title, cover, tagline], { autoAlpha: 0, force3D: true });
+
+    const playIntro = () => {
+      if (cancelled) return;
+
+      const brandH = brand.offsetHeight;
+      const taglineH = tagline.offsetHeight;
+      const coverShift = taglineH + TAGLINE_GAP;
+      const startY = -(brandH + BRAND_GAP) / 2;
+      const taglineTop = brandH + BRAND_GAP;
+      const liftY = () => {
+        const pad = Number.parseFloat(getComputedStyle(stage).paddingTop) || 32;
+        return pad - heroStack.offsetTop;
+      };
+
+      gsap.set(heroStack, { y: startY, scale: 1, transformOrigin: "50% 0%", force3D: true });
+      gsap.set(tagline, { left: "50%", xPercent: -50, top: 0, y: taglineTop, scale: 0.96, force3D: true });
+      gsap.set(cover, { y: 0, scale: 0.94, force3D: true });
+      gsap.set(logo, { scale: 0.92 });
+
+      if (prefersReducedMotion()) {
+        gsap.set(heroStack, { y: liftY(), scale: HERO_LIFT_SCALE });
+        gsap.set(cover, { y: coverShift, autoAlpha: 1, scale: 1 });
+        gsap.set([logo, title, tagline], { autoAlpha: 1, scale: 1 });
+        return;
+      }
+
+      introTlRef.current = gsap.timeline({ defaults: { force3D: true, ease: "power3.out" } })
+        .to(cover, {
+          autoAlpha: 1,
+          scale: 1,
+          duration: 0.5,
+        })
+        .to(heroStack, {
+          y: 0,
+          duration: 0.38,
+          ease: "power3.inOut",
+        }, "-=0.18")
+        .to(logo, {
+          autoAlpha: 1,
+          scale: 1,
+          duration: 0.36,
+        }, "<")
+        .to(title, {
+          autoAlpha: 1,
+          duration: 0.24,
+          ease: "power2.out",
+        }, "<0.08")
+        .to(heroStack, {
+          scale: HERO_LIFT_SCALE,
+          y: liftY(),
+          duration: 0.42,
+          ease: "power3.inOut",
+        }, "+=0.04")
+        .to(cover, {
+          y: coverShift,
+          duration: 0.34,
+          ease: "power3.inOut",
+        }, "-=0.08")
+        .to(tagline, {
+          autoAlpha: 1,
+          scale: 1,
+          duration: 0.36,
+        }, "-=0.22");
     };
 
-    if (prefersReducedMotion()) {
-      gsap.set(stage, { justifyContent: "flex-start" });
-      gsap.set(heroStack, { scale: HERO_LIFT_SCALE, y: 0, transformOrigin: "50% 0%" });
-      gsap.set(brand, { height: "auto", marginBottom: 12, overflow: "visible" });
-      gsap.set(taglineSlot, { height: "auto", overflow: "visible" });
-      gsap.set([logo, title, tagline], { autoAlpha: 1, scale: 1, x: 0, y: 0 });
-      gsap.set(cover, { autoAlpha: 1, scale: 1, x: 0, y: 0 });
-      return () => {
-        occupyTweenRef.current?.kill();
-      };
-    }
+    const startIntro = async () => {
+      try {
+        await cover.decode();
+      } catch {
+        // Keep going with current image metrics.
+      }
+      await document.fonts.ready;
+      playIntro();
+    };
 
-    gsap.set(brand, { height: 0, marginBottom: 0, overflow: "hidden" });
-    gsap.set(logo, { autoAlpha: 0, scale: 0.7, y: 20 });
-    gsap.set(title, { autoAlpha: 0, x: -12 });
-    gsap.set(cover, { autoAlpha: 0, scale: 0.72, y: 64 });
-    gsap.set(heroStack, { scale: 1, y: 0, transformOrigin: "center center" });
-    gsap.set(taglineSlot, { height: 0, overflow: "hidden" });
-    gsap.set(tagline, { autoAlpha: 0, scale: 0.86, y: 16 });
-
-    introTlRef.current = gsap.timeline({ defaults: { force3D: true } })
-      .to(cover, {
-        autoAlpha: 1,
-        scale: 1,
-        y: 0,
-        duration: 1.2,
-        delay: 0.12,
-        ease: "elastic.out(1, 0.68)",
-      })
-      .to(brand, {
-        height: "auto",
-        marginBottom: 12,
-        duration: 0.5,
-        ease: "power3.inOut",
-        onComplete: () => {
-          gsap.set(brand, { overflow: "visible" });
-        },
-      }, "+=0.08")
-      .to(logo, {
-        autoAlpha: 1,
-        scale: 1,
-        y: 0,
-        duration: 0.85,
-        ease: "elastic.out(1, 0.72)",
-      }, "-=0.28")
-      .to(title, {
-        autoAlpha: 1,
-        x: 0,
-        duration: 0.38,
-        ease: "power3.out",
-      }, "-=0.58")
-      .add(() => {
-        pinStackToTop();
-      })
-      .to(heroStack, {
-        scale: HERO_LIFT_SCALE,
-        y: 0,
-        duration: 0.7,
-        ease: "power3.inOut",
-      }, "+=0.1")
-      .to(taglineSlot, {
-        height: "auto",
-        duration: 0.7,
-        ease: "power3.inOut",
-        onComplete: () => {
-          gsap.set(taglineSlot, { overflow: "visible" });
-        },
-      }, "<")
-      .to(tagline, {
-        autoAlpha: 1,
-        scale: 1,
-        y: 0,
-        duration: 0.9,
-        ease: "elastic.out(1, 0.7)",
-      }, "-=0.22");
+    void startIntro();
 
     return () => {
+      cancelled = true;
       introTlRef.current?.kill();
       occupyTweenRef.current?.kill();
     };
@@ -190,40 +189,38 @@ export default function Home() {
           ref={stageRef}
         >
           <div
-            className="flex origin-center flex-col items-center"
+            className="relative flex w-full origin-top flex-col items-center will-change-transform"
             ref={heroStackRef}
           >
             <div
-              className="mb-0 flex h-0 shrink-0 items-center gap-[0.32em] overflow-hidden text-[clamp(1.65rem,3.5vw,2.35rem)]"
+              className="mb-3 grid w-full grid-cols-[1fr_auto_1fr] items-center text-[clamp(1.65rem,3.5vw,2.35rem)]"
               ref={brandRef}
             >
-              <img
-                alt=""
-                className="size-[0.78em] origin-center object-contain opacity-0"
-                ref={logoRef}
-                src={logoImage}
-              />
+              <div className="flex items-center justify-end pr-[0.32em]">
+                <img
+                  alt=""
+                  className="size-[1.5em] origin-center object-contain opacity-0"
+                  ref={logoRef}
+                  src={logoImage}
+                />
+              </div>
               <h1
                 className="origin-left text-[1em] leading-none font-semibold tracking-[-0.05em] text-[#17202b] whitespace-nowrap opacity-0 dark:text-white"
                 ref={titleRef}
               >
                 Class Widgets
               </h1>
+              <div />
             </div>
-            <div
-              className="flex h-0 items-center justify-center overflow-hidden"
-              ref={taglineSlotRef}
+            <p
+              className="absolute top-0 left-1/2 py-3 text-center text-[clamp(2.55rem,6vw,4.15rem)] font-semibold tracking-[-0.06em] whitespace-nowrap text-[#17202b] opacity-0 will-change-transform dark:text-white"
+              ref={taglineRef}
             >
-              <p
-                className="origin-center py-3 text-center text-[clamp(2.55rem,6vw,4.15rem)] font-semibold tracking-[-0.06em] text-[#17202b] opacity-0 dark:text-white"
-                ref={taglineRef}
-              >
-                课程表的终极形态
-              </p>
-            </div>
+              课程表的终极形态
+            </p>
             <img
               alt="Class Widgets 2 组件预览"
-              className="h-auto max-h-[min(56svh,620px)] w-full max-w-6xl origin-center object-contain opacity-0 drop-shadow-[0_28px_56px_rgb(24_42_66/0.22)] dark:drop-shadow-[0_32px_72px_rgb(0_0_0/0.55)]"
+              className="h-auto max-h-[min(56svh,620px)] w-full max-w-6xl origin-center object-contain opacity-0 will-change-transform drop-shadow-[0_28px_56px_rgb(24_42_66/0.22)] dark:drop-shadow-[0_32px_72px_rgb(0_0_0/0.55)]"
               ref={coverRef}
               src={coverImage}
             />
