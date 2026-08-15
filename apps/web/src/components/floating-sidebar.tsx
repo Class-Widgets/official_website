@@ -5,9 +5,10 @@ import gsap from "gsap";
 
 gsap.registerPlugin(useGSAP);
 
-const CARD_WIDTH = 74;
 const CARD_PAD = 12;
 const ICON_SIZE = 48;
+const CARD_WIDTH = ICON_SIZE + CARD_PAD * 2;
+const LABEL_PAD_RIGHT = 14;
 const COLLAPSED_BAR_LEFT = 6;
 const COLLAPSED_CARD_LEFT = COLLAPSED_BAR_LEFT - CARD_WIDTH;
 const EXPANDED_CARD_LEFT = 18;
@@ -22,13 +23,13 @@ export type SidebarOccupyChange = {
 };
 
 const itemClassName =
-  "group pointer-events-auto relative z-10 flex h-12 min-w-12 items-center justify-center overflow-hidden rounded-full transition-colors duration-300";
+  "group pointer-events-auto relative z-10 flex h-12 min-w-12 items-center justify-center overflow-hidden rounded-full p-0 transition-colors duration-300";
 
 const handleClassName =
   "pointer-events-none absolute top-1/2 z-8 h-28 w-1 -translate-y-1/2 rounded-full bg-linear-to-b from-[#6b8098] to-[#526174] shadow-[inset_0_1px_0_rgb(255_255_255/0.3),0_0_0_1px_rgb(82_97_116/0.18),0_2px_8px_rgb(8_14_23/0.14)] after:pointer-events-none after:absolute after:-inset-1.5 after:animate-pulse after:rounded-[inherit] after:shadow-[0_0_10px_rgb(82_97_116/0.2)] after:content-[''] motion-reduce:after:animate-none dark:from-white/90 dark:to-white/62 dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.72),0_0_0_1px_rgb(255_255_255/0.36),0_2px_8px_rgb(0_0_0/0.18)] dark:after:shadow-[0_0_10px_rgb(255_255_255/0.16)]";
 
 const glassClassName =
-  "pointer-events-none absolute inset-y-0 left-0 isolate overflow-hidden rounded-[42px] border border-white/44 bg-[linear-gradient(165deg,rgb(248_253_255/0.42)_0%,rgb(220_238_245/0.34)_46%,rgb(248_253_255/0.22)_100%)] shadow-[inset_0_1px_0_rgb(255_255_255/0.7),inset_0_0_0_1px_rgb(255_255_255/0.1),0_8px_24px_-10px_rgb(24_42_66/0.08),0_2px_6px_rgb(24_42_66/0.03)] backdrop-blur-[22px] backdrop-saturate-[1.35] dark:border-white/14 dark:bg-[linear-gradient(165deg,rgb(21_29_38/0.62)_0%,rgb(11_20_28/0.48)_48%,rgb(21_29_38/0.55)_100%)] dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.14),inset_0_0_0_1px_rgb(255_255_255/0.05),0_10px_28px_-12px_rgb(0_0_0/0.22),0_2px_8px_rgb(0_0_0/0.1)]";
+  "relative isolate flex h-full flex-col overflow-hidden rounded-[42px] border border-white/44 bg-[linear-gradient(165deg,rgb(248_253_255/0.42)_0%,rgb(220_238_245/0.34)_46%,rgb(248_253_255/0.22)_100%)] shadow-[inset_0_1px_0_rgb(255_255_255/0.7),inset_0_0_0_1px_rgb(255_255_255/0.1),0_8px_24px_-10px_rgb(24_42_66/0.08),0_2px_6px_rgb(24_42_66/0.03)] backdrop-blur-[22px] backdrop-saturate-[1.35] dark:border-white/14 dark:bg-[linear-gradient(165deg,rgb(21_29_38/0.62)_0%,rgb(11_20_28/0.48)_48%,rgb(21_29_38/0.55)_100%)] dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.14),inset_0_0_0_1px_rgb(255_255_255/0.05),0_10px_28px_-12px_rgb(0_0_0/0.22),0_2px_8px_rgb(0_0_0/0.1)]";
 
 const selectedClassName =
   "bg-[#17202b]/8 text-[#2b9fd4] dark:bg-white/12 dark:text-[#7ecdee]";
@@ -50,6 +51,7 @@ function collapseLabels(labels: HTMLSpanElement[]) {
   gsap.killTweensOf(labels);
   gsap.to(labels, {
     width: 0,
+    minWidth: 0,
     paddingRight: 0,
     autoAlpha: 0,
     duration: prefersReducedMotion() ? 0 : 0.22,
@@ -57,6 +59,15 @@ function collapseLabels(labels: HTMLSpanElement[]) {
     ease: "power3.in",
     overwrite: true,
   });
+}
+
+function measureMaxLabelWidth(labels: HTMLSpanElement[]) {
+  let maxWidth = 0;
+  for (const label of labels) {
+    gsap.set(label, { width: "auto", paddingRight: LABEL_PAD_RIGHT });
+    maxWidth = Math.max(maxWidth, label.offsetWidth);
+  }
+  return maxWidth;
 }
 
 function SidebarItem({
@@ -80,14 +91,14 @@ function SidebarItem({
 
   useGSAP(() => {
     if (!labelRef.current) return;
-    gsap.set(labelRef.current, { width: 0, paddingRight: 0, autoAlpha: 0 });
+    gsap.set(labelRef.current, { width: 0, minWidth: 0, paddingRight: 0, autoAlpha: 0 });
   }, { scope: labelRef });
 
   const content = (
     <>
       <span className="grid size-12 shrink-0 place-items-center">{children}</span>
       <span
-        className="inline-flex h-full items-center overflow-hidden text-[13px] leading-none font-medium tracking-[-0.02em] whitespace-nowrap"
+        className="inline-flex h-full min-w-0 shrink items-center overflow-hidden text-[13px] leading-none font-medium tracking-[-0.02em] whitespace-nowrap"
         data-sidebar-label="true"
         ref={labelRef}
       >
@@ -201,17 +212,15 @@ export function FloatingSidebar({
         });
       }
 
-      const widths = labels.map((label) => {
-        gsap.set(label, { width: "auto", paddingRight: 14, autoAlpha: 0 });
-        const width = label.offsetWidth;
-        gsap.set(label, { width: 0, paddingRight: 0, autoAlpha: 0 });
-        return width;
-      });
-      const glassWidth = CARD_PAD + ICON_SIZE + Math.max(0, ...widths) + CARD_PAD;
+      const maxLabelWidth = measureMaxLabelWidth(labels);
+      for (const label of labels) {
+        gsap.set(label, { width: 0, minWidth: 0, paddingRight: 0, autoAlpha: 0 });
+      }
+      const glassWidth = CARD_PAD + ICON_SIZE + maxLabelWidth + CARD_PAD;
 
       gsap.to(labels, {
-        width: (index: number) => widths[index] ?? 0,
-        paddingRight: 14,
+        width: maxLabelWidth,
+        paddingRight: LABEL_PAD_RIGHT,
         autoAlpha: 1,
         duration: instant ? 0 : 0.4,
         stagger: instant ? 0 : 0.045,
@@ -246,11 +255,12 @@ export function FloatingSidebar({
     if (!itemsExpandedRef.current || !glassRef.current) return;
 
     const labels = getLabels();
-    let maxLabelWidth = 0;
-    for (const label of labels) {
-      gsap.set(label, { width: "auto", paddingRight: 14, autoAlpha: 1 });
-      maxLabelWidth = Math.max(maxLabelWidth, label.offsetWidth);
-    }
+    const maxLabelWidth = measureMaxLabelWidth(labels);
+    gsap.set(labels, {
+      width: maxLabelWidth,
+      paddingRight: LABEL_PAD_RIGHT,
+      autoAlpha: 1,
+    });
     const glassWidth = CARD_PAD + ICON_SIZE + maxLabelWidth + CARD_PAD;
     gsap.set(glassRef.current, { width: glassWidth });
     if (isOccupied()) emitOccupy(glassWidth, 0);
@@ -420,60 +430,60 @@ export function FloatingSidebar({
       >
         <div
           className={glassClassName}
-          aria-hidden="true"
           ref={glassRef}
-        />
-        <div
-          className={`relative z-10 flex h-full flex-col items-stretch justify-center gap-3 py-5 pr-3 pl-3${
-            useHover || isOpen ? " pointer-events-auto" : " pointer-events-none"
-          }`}
-          onClick={() => {
-            if (!canHoverRef.current) setItemsExpanded(true);
-          }}
-          onMouseEnter={useHover ? () => setItemsExpanded(true) : undefined}
-          onMouseLeave={useHover ? () => setItemsExpanded(false) : undefined}
         >
-          <SidebarItem
-            ariaLabel="下载产品手册"
-            className={`${itemClassName} ${selectedClassName}`}
-            href="/docs/product-guide.pdf"
-            label="产品手册"
+          <div
+            className={`relative z-10 flex h-full w-full flex-col items-center justify-center gap-3 py-5${
+              useHover || isOpen ? " pointer-events-auto" : " pointer-events-none"
+            }`}
+            onClick={() => {
+              if (!canHoverRef.current) setItemsExpanded(true);
+            }}
+            onMouseEnter={useHover ? () => setItemsExpanded(true) : undefined}
+            onMouseLeave={useHover ? () => setItemsExpanded(false) : undefined}
           >
-            <Download className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:scale-105" size={21} strokeWidth={1.7} />
-          </SidebarItem>
-          <SidebarItem
-            ariaLabel="下载开发者文档"
-            className={`${itemClassName} ${itemMutedClassName}`}
-            href="/docs/developer-guide.pdf"
-            label="开发者文档"
-          >
-            <FileText className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:scale-105" size={21} strokeWidth={1.7} />
-          </SidebarItem>
-          <SidebarItem
-            ariaLabel={isDark ? "切换到浅色模式" : "切换到深色模式"}
-            className={`${itemClassName} ${itemMutedClassName} cursor-pointer`}
-            label={isDark ? "浅色模式" : "深色模式"}
-            onClick={() => setIsDark((current) => !current)}
-          >
-            {isDark ? (
-              <Moon className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-12 group-hover:scale-105" size={20} />
-            ) : (
-              <Sun className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-45 group-hover:scale-105" size={20} />
-            )}
-          </SidebarItem>
-          <SidebarItem
-            ariaLabel={isPinned ? "取消固定侧栏" : "固定侧栏"}
-            className={`${itemClassName} cursor-pointer ${isPinned ? selectedClassName : itemMutedClassName}`}
-            label={isPinned ? "取消固定" : "固定侧栏"}
-            onClick={togglePinned}
-            pressed={isPinned}
-          >
-            {isPinned ? (
-              <PinOff className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-rotate-12 group-hover:scale-105" size={20} strokeWidth={1.7} />
-            ) : (
-              <Pin className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-rotate-12 group-hover:scale-105" size={20} strokeWidth={1.7} />
-            )}
-          </SidebarItem>
+            <SidebarItem
+              ariaLabel="下载产品手册"
+              className={`${itemClassName} ${selectedClassName}`}
+              href="/docs/product-guide.pdf"
+              label="产品手册"
+            >
+              <Download className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:scale-105" size={21} strokeWidth={1.7} />
+            </SidebarItem>
+            <SidebarItem
+              ariaLabel="下载开发者文档"
+              className={`${itemClassName} ${itemMutedClassName}`}
+              href="/docs/developer-guide.pdf"
+              label="开发者文档"
+            >
+              <FileText className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:scale-105" size={21} strokeWidth={1.7} />
+            </SidebarItem>
+            <SidebarItem
+              ariaLabel={isDark ? "切换到浅色模式" : "切换到深色模式"}
+              className={`${itemClassName} ${itemMutedClassName} cursor-pointer`}
+              label={isDark ? "浅色模式" : "深色模式"}
+              onClick={() => setIsDark((current) => !current)}
+            >
+              {isDark ? (
+                <Moon className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-12 group-hover:scale-105" size={20} />
+              ) : (
+                <Sun className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-45 group-hover:scale-105" size={20} />
+              )}
+            </SidebarItem>
+            <SidebarItem
+              ariaLabel={isPinned ? "取消固定侧栏" : "固定侧栏"}
+              className={`${itemClassName} cursor-pointer ${isPinned ? selectedClassName : itemMutedClassName}`}
+              label={isPinned ? "取消固定" : "固定侧栏"}
+              onClick={togglePinned}
+              pressed={isPinned}
+            >
+              {isPinned ? (
+                <PinOff className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-rotate-12 group-hover:scale-105" size={20} strokeWidth={1.7} />
+              ) : (
+                <Pin className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-rotate-12 group-hover:scale-105" size={20} strokeWidth={1.7} />
+              )}
+            </SidebarItem>
+          </div>
         </div>
       </div>
     </div>
