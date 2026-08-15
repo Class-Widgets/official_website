@@ -18,6 +18,15 @@ const CARD_TRAVEL = EXPANDED_CARD_LEFT - COLLAPSED_CARD_LEFT;
 const itemClassName =
   "group pointer-events-auto relative z-10 flex h-12 w-max min-w-12 items-center overflow-hidden rounded-full transition-colors duration-300";
 
+const handleClassName =
+  "pointer-events-none absolute top-1/2 z-8 h-28 w-1 -translate-y-1/2 rounded-full bg-linear-to-b from-[#6b8098] to-[#526174] shadow-[inset_0_1px_0_rgb(255_255_255/0.3),0_0_0_1px_rgb(82_97_116/0.22),0_4px_18px_rgb(8_14_23/0.3)] after:pointer-events-none after:absolute after:-inset-1.5 after:animate-pulse after:rounded-[inherit] after:shadow-[0_0_18px_rgb(82_97_116/0.42)] after:content-[''] motion-reduce:after:animate-none dark:from-white/90 dark:to-white/62 dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.72),0_0_0_1px_rgb(255_255_255/0.42),0_4px_18px_rgb(0_0_0/0.34)] dark:after:shadow-[0_0_18px_rgb(255_255_255/0.32)]";
+
+const glassClassName =
+  "pointer-events-none absolute inset-y-0 left-0 isolate overflow-hidden rounded-[42px] border border-white/40 bg-[linear-gradient(165deg,rgb(255_255_255/0.3)_0%,rgb(255_255_255/0.1)_46%,rgb(255_255_255/0.16)_100%)] shadow-[inset_0_1px_0_rgb(255_255_255/0.58),inset_0_-10px_18px_rgb(255_255_255/0.04),0_14px_40px_rgb(20_32_52/0.1),0_2px_6px_rgb(20_32_52/0.04)] backdrop-blur-[22px] backdrop-saturate-[1.55] dark:border-white/14 dark:bg-[linear-gradient(165deg,rgb(255_255_255/0.14)_0%,rgb(255_255_255/0.05)_48%,rgb(255_255_255/0.08)_100%)] dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.18),inset_0_-10px_18px_rgb(0_0_0/0.16),0_14px_40px_rgb(0_0_0/0.34)]";
+
+const chipClassName =
+  "border border-white/45 bg-linear-to-b from-white/42 to-white/20 shadow-[inset_0_1px_0_rgb(255_255_255/0.55),0_6px_16px_rgb(30_50_80/0.08)] backdrop-blur-md backdrop-saturate-[1.35] dark:border-white/12 dark:from-white/16 dark:to-white/7 dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.16),0_6px_16px_rgb(0_0_0/0.22)]";
+
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
@@ -269,7 +278,7 @@ export function FloatingSidebar() {
       ref={rootRef}
     >
       <div
-        className="sidebar-handle pointer-events-none absolute top-1/2 z-8 h-28 w-1 -translate-y-1/2 rounded-full"
+        className={handleClassName}
         style={{ left: `${COLLAPSED_BAR_LEFT}px` }}
         ref={handleRef}
       />
@@ -279,7 +288,7 @@ export function FloatingSidebar() {
         ref={cardRef}
       >
         <div
-          className="frosted-glass pointer-events-none absolute inset-y-0 left-0 rounded-[42px]"
+          className={glassClassName}
           aria-hidden="true"
           ref={glassRef}
         />
@@ -290,7 +299,7 @@ export function FloatingSidebar() {
         >
           <SidebarItem
             ariaLabel="下载产品手册"
-            className={`frosted-glass-chip ${itemClassName} text-[#17202b] hover:bg-white/40 hover:text-[#1e6eff] dark:text-white/82 dark:hover:bg-white/14 dark:hover:text-white`}
+            className={`${chipClassName} ${itemClassName} text-[#17202b] hover:bg-white/40 hover:text-[#1e6eff] dark:text-white/82 dark:hover:bg-white/14 dark:hover:text-white`}
             href="/docs/product-guide.pdf"
             label="产品手册"
           >
