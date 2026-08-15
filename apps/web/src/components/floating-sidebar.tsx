@@ -16,6 +16,27 @@ const EXPANDED_CARD_LEFT = 18;
 const EXPANDED_BAR_LEFT = EXPANDED_CARD_LEFT + CARD_WIDTH;
 const HANDLE_TRAVEL = EXPANDED_BAR_LEFT - COLLAPSED_BAR_LEFT;
 const CARD_TRAVEL = EXPANDED_CARD_LEFT - COLLAPSED_CARD_LEFT;
+const SIDEBAR_PINNED_KEY = "cw-sidebar-pinned";
+
+export function getStoredSidebarPinned(): boolean {
+  try {
+    return localStorage.getItem(SIDEBAR_PINNED_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+export function getPinnedOccupiedRight() {
+  return EXPANDED_CARD_LEFT + CARD_WIDTH;
+}
+
+function persistSidebarPinned(pinned: boolean) {
+  try {
+    localStorage.setItem(SIDEBAR_PINNED_KEY, String(pinned));
+  } catch {
+    // Private mode or blocked storage.
+  }
+}
 
 export type SidebarOccupyChange = {
   occupiedRight: number;
@@ -132,18 +153,18 @@ export function FloatingSidebar({
   const handleRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const glassRef = useRef<HTMLDivElement>(null);
+  const { isDark, toggleTheme } = useTheme();
+  const [isPinned, setIsPinned] = useState(getStoredSidebarPinned);
+  const [isOpen, setIsOpen] = useState(isPinned);
   const isHoveringRef = useRef(false);
-  const isOpenRef = useRef(false);
-  const isPinnedRef = useRef(false);
+  const isOpenRef = useRef(isPinned);
+  const isPinnedRef = useRef(isPinned);
   const itemsExpandedRef = useRef(false);
   const sidebarTlRef = useRef<gsap.core.Timeline | null>(null);
   const onOccupyRef = useRef(onOccupy);
   const canHoverRef = useRef(canHoverFine());
   const animateSidebarRef = useRef<(expanded: boolean) => void>(() => {});
   const setItemsExpandedRef = useRef<(expanded: boolean) => void>(() => {});
-  const { isDark, toggleTheme } = useTheme();
-  const [isPinned, setIsPinned] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const [useHover, setUseHover] = useState(canHoverFine);
 
   const isOccupied = () => isHoveringRef.current || isPinnedRef.current;
@@ -180,14 +201,25 @@ export function FloatingSidebar({
   useGSAP(() => {
     if (!handleRef.current || !cardRef.current || !glassRef.current) return;
 
-    gsap.set(handleRef.current, { x: 0, autoAlpha: 1 });
-    gsap.set(cardRef.current, {
-      x: 0,
-      autoAlpha: 0,
-      scale: 0.94,
-      transformOrigin: "left center",
-    });
+    gsap.set(cardRef.current, { transformOrigin: "left center" });
     gsap.set(glassRef.current, { width: CARD_WIDTH });
+
+    if (isPinnedRef.current) {
+      gsap.set(handleRef.current, { x: HANDLE_TRAVEL, autoAlpha: 0 });
+      gsap.set(cardRef.current, {
+        x: CARD_TRAVEL,
+        autoAlpha: 1,
+        scale: 1,
+      });
+      emitOccupy(CARD_WIDTH, 0);
+    } else {
+      gsap.set(handleRef.current, { x: 0, autoAlpha: 1 });
+      gsap.set(cardRef.current, {
+        x: 0,
+        autoAlpha: 0,
+        scale: 0.94,
+      });
+    }
 
     return () => {
       sidebarTlRef.current?.kill();
@@ -390,6 +422,7 @@ export function FloatingSidebar({
     const next = !isPinnedRef.current;
     isPinnedRef.current = next;
     setIsPinned(next);
+    persistSidebarPinned(next);
 
     if (next) {
       animateSidebar(true);

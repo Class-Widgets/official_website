@@ -3,7 +3,12 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import coverImage from "../assets/home/cover.png";
 import logoImage from "../assets/home/cw2_logo.png";
-import { FloatingSidebar, type SidebarOccupyChange } from "../components/floating-sidebar";
+import {
+  FloatingSidebar,
+  getPinnedOccupiedRight,
+  getStoredSidebarPinned,
+  type SidebarOccupyChange,
+} from "../components/floating-sidebar";
 import { HeroActions } from "../components/hero-actions";
 import { ScrollHint } from "../components/scroll-hint";
 
@@ -55,8 +60,11 @@ export default function Home() {
 
   useGSAP(() => {
     const inset = getGlassInset();
-    occupyRef.current.edge = inset;
-    setSidebarEdge(inset);
+    const edge = getStoredSidebarPinned()
+      ? getPinnedOccupiedRight() + HOME_GLASS_GAP
+      : inset;
+    occupyRef.current.edge = edge;
+    setSidebarEdge(edge);
 
     const brand = brandRef.current;
     const logo = logoRef.current;
