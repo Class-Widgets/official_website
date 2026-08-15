@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useGSAP } from "@gsap/react";
-import { Download, FileText, Moon, Sun } from "lucide-react";
+import { Download, FileText, Moon, Pin, PinOff, Sun } from "lucide-react";
 import gsap from "gsap";
 
 gsap.registerPlugin(useGSAP);
@@ -57,6 +57,7 @@ function SidebarItem({
   children,
   href,
   onClick,
+  pressed,
 }: {
   label: string;
   ariaLabel: string;
@@ -64,6 +65,7 @@ function SidebarItem({
   children: ReactNode;
   href?: string;
   onClick?: () => void;
+  pressed?: boolean;
 }) {
   const labelRef = useRef<HTMLSpanElement>(null);
 
@@ -94,7 +96,7 @@ function SidebarItem({
   }
 
   return (
-    <button aria-label={ariaLabel} className={className} onClick={onClick} type="button">
+    <button aria-label={ariaLabel} aria-pressed={pressed} className={className} onClick={onClick} type="button">
       {content}
     </button>
   );
@@ -110,10 +112,15 @@ export function FloatingSidebar({
   const cardRef = useRef<HTMLDivElement>(null);
   const glassRef = useRef<HTMLDivElement>(null);
   const isHoveringRef = useRef(false);
+  const isOpenRef = useRef(false);
+  const isPinnedRef = useRef(false);
   const itemsExpandedRef = useRef(false);
   const sidebarTlRef = useRef<gsap.core.Timeline | null>(null);
   const onOccupyRef = useRef(onOccupy);
   const [isDark, setIsDark] = useState(false);
+  const [isPinned, setIsPinned] = useState(false);
+
+  const isOccupied = () => isHoveringRef.current || isPinnedRef.current;
 
   useEffect(() => {
     onOccupyRef.current = onOccupy;
@@ -122,7 +129,7 @@ export function FloatingSidebar({
   const emitOccupy = (glassWidth: number, duration: number, delay = 0) => {
     const instant = prefersReducedMotion();
     onOccupyRef.current?.({
-      occupiedRight: isHoveringRef.current ? EXPANDED_CARD_LEFT + glassWidth : 0,
+      occupiedRight: isOccupied() ? EXPANDED_CARD_LEFT + glassWidth : 0,
       duration: instant ? 0 : duration,
       delay: instant ? 0 : delay,
     });
@@ -203,7 +210,7 @@ export function FloatingSidebar({
       ease: "power3.in",
       overwrite: true,
     });
-    if (isHoveringRef.current) emitOccupy(CARD_WIDTH, 0.45);
+    if (isOccupied()) emitOccupy(CARD_WIDTH, 0.45);
   };
 
   useEffect(() => {
@@ -221,12 +228,13 @@ export function FloatingSidebar({
     }
     const glassWidth = CARD_PAD + ICON_SIZE + maxLabelWidth + CARD_PAD;
     gsap.set(glassRef.current, { width: glassWidth });
-    if (isHoveringRef.current) emitOccupy(glassWidth, 0);
-  }, { dependencies: [isDark], scope: rootRef });
+    if (isOccupied()) emitOccupy(glassWidth, 0);
+  }, { dependencies: [isDark, isPinned], scope: rootRef });
 
   const animateSidebar = (expanded: boolean) => {
     if (!handleRef.current || !cardRef.current || !glassRef.current) return;
-    if (expanded !== isHoveringRef.current) return;
+    if (expanded === isOpenRef.current) return;
+    isOpenRef.current = expanded;
 
     const instant = prefersReducedMotion();
     sidebarTlRef.current?.kill();
@@ -298,12 +306,29 @@ export function FloatingSidebar({
 
   const handleMouseLeave = () => {
     isHoveringRef.current = false;
+    if (isPinnedRef.current) {
+      setItemsExpanded(false);
+      return;
+    }
     animateSidebar(false);
+  };
+
+  const togglePinned = () => {
+    const next = !isPinnedRef.current;
+    isPinnedRef.current = next;
+    setIsPinned(next);
+
+    if (next) {
+      animateSidebar(true);
+      return;
+    }
+
+    if (!isHoveringRef.current) animateSidebar(false);
   };
 
   return (
     <div
-      className="fixed left-0 top-1/2 z-8 h-56 w-70 -translate-y-1/2"
+      className="fixed left-0 top-1/2 z-8 h-72 w-70 -translate-y-1/2"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       ref={rootRef}
@@ -314,7 +339,7 @@ export function FloatingSidebar({
         ref={handleRef}
       />
       <div
-        className="pointer-events-none absolute top-0 z-9 flex h-56 flex-col items-start justify-center opacity-0"
+        className="pointer-events-none absolute top-0 z-9 flex h-72 flex-col items-start justify-center opacity-0"
         style={{ left: `${COLLAPSED_CARD_LEFT}px` }}
         ref={cardRef}
       >
@@ -354,6 +379,19 @@ export function FloatingSidebar({
               <Moon className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-12 group-hover:scale-105" size={20} />
             ) : (
               <Sun className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-45 group-hover:scale-105" size={20} />
+            )}
+          </SidebarItem>
+          <SidebarItem
+            ariaLabel={isPinned ? "取消固定侧栏" : "固定侧栏"}
+            className={`${isPinned ? chipClassName : ""} ${itemClassName} cursor-pointer ${isPinned ? "text-[#17202b] hover:bg-white/40 hover:text-[#1e6eff] dark:text-white/82 dark:hover:bg-white/14 dark:hover:text-white" : "text-[#536171] hover:bg-white/30 hover:text-[#17202b] dark:text-white/48 dark:hover:bg-white/8 dark:hover:text-white/82"}`}
+            label={isPinned ? "取消固定" : "固定侧栏"}
+            onClick={togglePinned}
+            pressed={isPinned}
+          >
+            {isPinned ? (
+              <PinOff className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-rotate-12 group-hover:scale-105" size={20} strokeWidth={1.7} />
+            ) : (
+              <Pin className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-rotate-12 group-hover:scale-105" size={20} strokeWidth={1.7} />
             )}
           </SidebarItem>
         </div>
