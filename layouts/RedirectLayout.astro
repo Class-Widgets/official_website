@@ -1,25 +1,18 @@
 ---
-export interface Props {
-  targetUrl: string;
-}
-
-const { targetUrl } = Astro.props as Props;
+const repositoryUrl = "https://github.com/RinLit-233-shiroko/Class-Widgets-2";
 ---
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="refresh" content={`0; url=${targetUrl}`}>
-  <script data-target-url={targetUrl}>
-    // 后备重定向逻辑
-    const scriptEl = document.currentScript;
-    const targetUrl = scriptEl.dataset.targetUrl;
-    window.location.replace(targetUrl);
+  <meta http-equiv="refresh" content={`0; url=${repositoryUrl}`}>
+  <script>
+    window.location.replace("https://github.com/RinLit-233-shiroko/Class-Widgets-2");
   </script>
   <title>正在重定向...</title>
 </head>
 <body>
-  <p>您正在跳转到 ClassWidgets 文档中心，<a href={targetUrl}>请点击此处</a>。</p>
+  <p>官网暂不对外开放，正在跳转至 <a href={repositoryUrl}>Class Widgets 2 GitHub 仓库</a>。</p>
 </body>
 </html>
