@@ -105,6 +105,17 @@ const Footer = ({ translations }: { translations: Translations }) => {
 
         <div className="mt-16 border-t border-[#1A1B26] pt-8 text-center text-[#87878A]">
           <p>© {new Date().getFullYear()} Class Widgets. {t("footer.cr")}</p>
+          <p className="mt-2">
+            <a
+              href="https://beian.miit.gov.cn/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors"
+            >
+              琼ICP备2026014960号-1
+              <span className="ml-2 text-xs text-[#5F5F66]">工业和信息化部 ICP 备案查询</span>
+            </a>
+          </p>
         </div>
       </div>
     </footer>
