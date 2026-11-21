@@ -121,14 +121,14 @@ const Footer = ({ translations }: { translations: Translations }) => {
               href="https://beian.mps.gov.cn/#/query/webSearch?code=46010002002491"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 align-middle hover:text-white transition-colors"
+              className="hover:text-white transition-colors"
             >
               <img
                 src="/beian-logo.png"
                 alt="公安备案徽标"
-                width="20"
-                height="20"
-                className="h-5 w-5 object-contain"
+                width="16"
+                height="16"
+                style={{ width: 16, height: 16, marginRight: 6, verticalAlign: "middle" }}
               />
               琼公网安备46010002002491号
             </a>
