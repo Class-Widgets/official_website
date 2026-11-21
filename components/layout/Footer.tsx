@@ -105,34 +105,45 @@ const Footer = ({ translations }: { translations: Translations }) => {
 
         <div className="mt-16 border-t border-[#1A1B26] pt-8 text-center text-[#87878A]">
           <p>© {new Date().getFullYear()} Class Widgets. {t("footer.cr")}</p>
-          <p className="mt-2">
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs leading-5">
             <a
               href="https://beian.miit.gov.cn/"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-white transition-colors"
+              style={{ color: "inherit", textDecoration: "none" }}
             >
               琼ICP备2026014960号-1
-              <span className="ml-2 text-xs text-[#5F5F66]">工业和信息化部 ICP 备案查询</span>
             </a>
-          </p>
-          <p className="mt-2">
             <a
               href="https://beian.mps.gov.cn/#/query/webSearch?code=46010002002491"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-white transition-colors"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                color: "inherit",
+                textDecoration: "none",
+              }}
             >
               <img
                 src="/beian-logo.png"
                 alt="公安备案徽标"
                 width="16"
                 height="16"
-                style={{ width: 16, height: 16, marginRight: 6, verticalAlign: "middle" }}
+                style={{
+                  display: "inline-block",
+                  width: 16,
+                  height: 16,
+                  marginRight: 6,
+                  flexShrink: 0,
+                }}
               />
-              琼公网安备46010002002491号
+              <span>琼公网安备46010002002491号</span>
             </a>
-          </p>
+          </div>
         </div>
       </div>
     </footer>
